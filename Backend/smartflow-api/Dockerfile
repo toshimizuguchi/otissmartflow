@@ -8,19 +8,18 @@ COPY .mvn .mvn
 COPY pom.xml .
 COPY src src
 
-# Dá permissão de execução ao mvnw e compila gerando o .jar
+# Garante permissão de execução e compila
 RUN chmod +x ./mvnw && ./mvnw clean package -DskipTests
 
-# Runtime stage (imagem enxuta)
+# Runtime stage
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Copia apenas o .jar compilado
+# Copia o jar gerado
 COPY --from=build /app/target/*.jar app.jar
 
-# Render atribui dinamicamente a porta através da variável $PORT
-ENV PORT=8080
-EXPOSE 8080
+# Spring Boot lê automaticamente a variável PORT injetada pelo Render
+EXPOSE 8080 10000
 
-# Flags de memória otimizadas para caber com folga no plano Free (512MB RAM) do Render
-ENTRYPOINT ["java", "-Xmx350m", "-Xms200m", "-XX:+UseSerialGC", "-Dserver.port=${PORT}", "-jar", "app.jar"]
+# Execução com shell para respeitar as variáveis de ambiente e otimização de memória RAM
+ENTRYPOINT ["sh", "-c", "java -Xmx350m -Xms200m -XX:+UseSerialGC -Dserver.port=${PORT:-8080} -jar app.jar"]
