@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { FileText, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Search, Building2 } from 'lucide-react';
 
 export const ContractsModule: React.FC = () => {
-  const { contracts, setActiveView } = useApp();
+  const { contracts, setActiveView, updateContractStatus } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredContracts = contracts.filter(c => 
@@ -83,11 +83,22 @@ export const ContractsModule: React.FC = () => {
             </div>
 
             {contract.marginDropAlert && (
-            <div className="pt-3 border-t border-slate-800 flex items-start gap-2.5 text-xs text-slate-300">
-             <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <span>{contract.marginDropAlert}</span>
+              <div className="pt-3 border-t border-slate-800 flex items-start gap-2.5 text-xs text-slate-300">
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{contract.marginDropAlert}</span>
+              </div>
+            )}
+
+            <div className="pt-2 flex items-center justify-between border-t border-slate-800/80">
+              <span className="text-[11px] text-slate-500">Status Operacional:</span>
+              <button
+                type="button"
+                onClick={() => updateContractStatus(contract.id, contract.status === 'EM_RISCO' ? 'ATIVO' : 'EM_RISCO')}
+                className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+              >
+                {contract.status === 'EM_RISCO' ? 'Regularizar Status' : 'Sinalizar Risco'}
+              </button>
             </div>
-                  )}
           </div>
         ))}
       </div>

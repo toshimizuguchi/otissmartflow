@@ -1,0 +1,11 @@
+{
+  "name": "otissmartflow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OTIS SmartFlow IA - Plataforma de Gestao Operacional e Preditiva de Elevadores",
+  "scripts": {
+    "dev": "npm --prefix FrontEnd run dev",
+    "build": "npm --prefix FrontEnd run build",
+    "preview": "npm --prefix FrontEnd run preview"
+  }
+}

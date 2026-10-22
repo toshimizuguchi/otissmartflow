@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { querySmartFlowAI, AIChatMessage } from '../../services/geminiService';
+import { apiService } from '../../services/apiService';
 import {
   Sparkles,
   X,
@@ -108,7 +109,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ isOpen, onClose }) =
     }
   }, [chats]);
 
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string) => {
     const query = textToSend || inputPrompt;
     if (!query.trim() || isThinking) return;
 
@@ -123,6 +124,34 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ isOpen, onClose }) =
     if (!textToSend) setInputPrompt('');
     setIsThinking(true);
 
+    try {
+      // 1. Tenta resposta do Backend Spring Boot AI Controller (/api/v1/ai/query)
+      const backendRes = await apiService.ai.queryCopilot(query, {
+        equipmentsCount: equipments.length,
+        callsCount: calls.length,
+        techniciansCount: technicians.length,
+        contractsCount: contracts.length,
+        partsCount: parts.length
+      });
+
+      if (backendRes && backendRes.text && !backendRes.text.includes('heurístico OTIS')) {
+        const aiMsg: AIChatMessage = {
+          id: 'ai-' + Date.now(),
+          sender: 'assistant',
+          text: backendRes.text,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          metrics: backendRes.metrics,
+          suggestedAction: backendRes.suggestedAction
+        };
+        setMessages(prev => [...prev, aiMsg]);
+        setIsThinking(false);
+        return;
+      }
+    } catch (e) {
+      console.debug('Backend AI query fallback:', e);
+    }
+
+    // 2. Fallback enriquecido via heurística local e Gemini
     setTimeout(() => {
       const response = querySmartFlowAI(query, {
         equipments,
@@ -143,7 +172,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ isOpen, onClose }) =
 
       setMessages(prev => [...prev, aiMsg]);
       setIsThinking(false);
-    }, 600);
+    }, 400);
   };
 
   const handleNewChat = () => {

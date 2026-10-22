@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "cd FrontEnd && npm install && npm run build",
+  "outputDirectory": "FrontEnd/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/FrontEnd/dist/index.html"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Sliders, Save, RotateCcw, UploadCloud, ArrowRight, Minus, Plus } from 'lucide-react';
+import { Sliders, Save, RotateCcw, UploadCloud, ArrowRight, Minus, Plus, Server, RefreshCw } from 'lucide-react';
 
 // Estilo dos controles deslizantes (barra preenchida + bolinha) — fica junto do componente
 const RANGE_CSS = `
@@ -26,7 +26,7 @@ const RANGE_CSS = `
 const DEFAULTS = { door: 35, age: 25, history: 40 };
 
 export const SettingsModule: React.FC = () => {
-  const { addToast, setActiveView } = useApp();
+  const { addToast, setActiveView, apiConnection, refreshFromBackend } = useApp();
   const [door, setDoor] = useState(DEFAULTS.door);
   const [age, setAge] = useState(DEFAULTS.age);
   const [history, setHistory] = useState(DEFAULTS.history);
@@ -164,6 +164,34 @@ export const SettingsModule: React.FC = () => {
         </form>
 
         <div className="lg:col-span-4 space-y-4">
+          <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-slate-200 font-bold text-sm">
+                <Server className="w-4 h-4 text-cyan-400" />
+                <span>Backend REST & Deploy</span>
+              </div>
+              <span className={`w-2 h-2 rounded-full ${apiConnection.online ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              {apiConnection.online
+                ? 'Conectado aos microserviços Spring Boot e Python FastAPI.'
+                : 'Operando com dados integrados. Configure o endpoint de deploy ou inicie os serviços.'}
+            </p>
+            <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] font-mono space-y-1">
+              <div className="text-slate-400 truncate">API: <span className="text-cyan-400">{apiConnection.apiUrl}</span></div>
+              <div className="text-slate-400 truncate">Reports: <span className="text-indigo-400">{apiConnection.reportsUrl}</span></div>
+            </div>
+            <button
+              type="button"
+              onClick={refreshFromBackend}
+              disabled={apiConnection.isSyncing}
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${apiConnection.isSyncing ? 'animate-spin' : ''}`} />
+              <span>{apiConnection.isSyncing ? 'Sincronizando...' : 'Sincronizar com Backend'}</span>
+            </button>
+          </div>
+
           <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
             <div className="flex items-center gap-2 text-slate-200 font-bold text-sm">
               <UploadCloud className="w-4 h-4 text-cyan-400" />

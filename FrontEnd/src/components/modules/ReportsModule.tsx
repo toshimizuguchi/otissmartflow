@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Download, FileText, Loader2 } from 'lucide-react';
+import { apiService } from '../../services/apiService';
 
 export const ReportsModule: React.FC = () => {
   const { addToast } = useApp();
@@ -25,22 +26,8 @@ export const ReportsModule: React.FC = () => {
     });
 
     try {
-      // Dispara o download pelo backend Spring Boot (porta 8080)
-      const downloadUrl = `http://localhost:8080/api/v1/reports/download/${reportId}`;
-      const response = await fetch(downloadUrl);
-      
-      if (!response.ok) {
-        // Fallback direto para o microserviço Python na porta 8000 se o Spring Boot não estiver rodando no momento
-        const fallbackUrl = `http://localhost:8000/reports/download/${reportId}`;
-        const fallbackResp = await fetch(fallbackUrl);
-        if (!fallbackResp.ok) throw new Error('Serviço de relatórios indisponível.');
-        
-        const blob = await fallbackResp.blob();
-        triggerBlobDownload(blob, reportTitle, reportId);
-      } else {
-        const blob = await response.blob();
-        triggerBlobDownload(blob, reportTitle, reportId);
-      }
+      const { blob, filename } = await apiService.reports.download(reportId);
+      triggerBlobDownload(blob, reportTitle, reportId, filename);
 
       addToast({
         type: 'success',
@@ -50,18 +37,18 @@ export const ReportsModule: React.FC = () => {
     } catch (err: any) {
       addToast({
         type: 'warning',
-        title: 'Servidores Offline',
-        message: `Para baixar em tempo real, inicie o Spring Boot (porta 8080) e o Python FastAPI (porta 8000).`
+        title: 'Serviço Indisponível',
+        message: `Não foi possível gerar o relatório. Verifique a conexão com o backend.`
       });
     } finally {
       setDownloadingReport(null);
     }
   };
 
-  const triggerBlobDownload = (blob: Blob, title: string, id: string) => {
+  const triggerBlobDownload = (blob: Blob, title: string, id: string, customFilename?: string) => {
     const ext = (id === 'executivo-nacional' || id === 'auditoria-decisoes') ? 'pdf' : 'xlsx';
     const timestamp = new Date().toISOString().slice(0, 10);
-    const filename = `${id}_${timestamp}.${ext}`;
+    const filename = customFilename || `${id}_${timestamp}.${ext}`;
     
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

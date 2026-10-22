@@ -10,8 +10,10 @@ import {
   Menu,
   ChevronRight,
   MessageSquare,
-  RotateCcw
+  RotateCcw,
+  Server
 } from 'lucide-react';
+import { BackendConnectionModal } from '../modals/BackendConnectionModal';
 
 interface HeaderProps {
   onOpenAIChat: () => void;
@@ -32,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAIChat, onToggleMobileMenu
   const { currentUser, switchRole, logout, alerts, setActiveView, resetToCleanState, apiConnection, refreshFromBackend } = useApp();
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [backendModalOpen, setBackendModalOpen] = useState(false);
   const roleRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
 
@@ -135,8 +138,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAIChat, onToggleMobileMenu
 
         {/* Backend REST API Connection Status */}
         <button
-          onClick={refreshFromBackend}
-          title={apiConnection.online ? "Backend Spring Boot Conectado (Porta 8080). Clique para sincronizar." : "Modo Local Ativo. Clique para tentar reconectar ao Backend."}
+          onClick={() => setBackendModalOpen(true)}
+          title={apiConnection.online ? "Backend Conectado. Clique para ver detalhes e endpoints." : "Modo Local Ativo. Clique para configurar endpoints de conexão ou testar."}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold border transition-all cursor-pointer shadow-sm ${
             apiConnection.online
               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
@@ -144,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAIChat, onToggleMobileMenu
           }`}
         >
           <span className={`w-2 h-2 rounded-full ${apiConnection.online ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-          <span className="hidden lg:inline font-mono">{apiConnection.online ? 'API 8080 ON' : 'API OFFLINE'}</span>
+          <span className="hidden sm:inline font-mono">{apiConnection.online ? 'BACKEND ON' : 'BACKEND LOCAL'}</span>
         </button>
 
         {/* Assistente IA */}
@@ -241,6 +244,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAIChat, onToggleMobileMenu
           )}
         </div>
       </div>
+
+      <BackendConnectionModal
+        isOpen={backendModalOpen}
+        onClose={() => setBackendModalOpen(false)}
+      />
     </header>
   );
 };

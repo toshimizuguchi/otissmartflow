@@ -43,6 +43,7 @@ import {
   Check
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { apiService } from '../../services/apiService';
 import { CallOrigin, EquipmentType, Technician, Customer, Call } from '../../types';
 import { 
   calculateDistanceKm, 
@@ -224,6 +225,55 @@ export const CreateCallModal: React.FC<CreateCallModalProps> = ({
 
   // Debounced address calculation state
   const [isCalculatingProximity, setIsCalculatingProximity] = useState(false);
+
+  // Backend AI Triagem state
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<any | null>(null);
+  const [isAnalyzingAi, setIsAnalyzingAi] = useState(false);
+
+  const handleAiAnalyze = async () => {
+    if (!problemDescription.trim()) {
+      addToast({
+        type: 'warning',
+        title: 'Descrição Necessária',
+        message: 'Preencha o problema relatado antes de acionar a triagem da IA.'
+      });
+      return;
+    }
+
+    setIsAnalyzingAi(true);
+    try {
+      const res = await apiService.ai.analyzeCall({
+        problemDescription,
+        equipmentId: selectedEquipmentId || undefined,
+        hasTrappedPassenger,
+        isCarStopped
+      });
+
+      if (res) {
+        setAiAnalysisResult(res);
+        if (res.suggestedPriority === 'CRITICO') {
+          setSeverityLevel(5);
+        } else if (res.suggestedPriority === 'ALTO') {
+          setSeverityLevel(4);
+        }
+        if (res.suggestedTechnicianId) {
+          const tech = technicians.find(t => t.id === res.suggestedTechnicianId);
+          if (tech) {
+            setSelectedTechnicians([{ id: tech.id, role: 'LEAD' }]);
+          }
+        }
+        addToast({
+          type: 'success',
+          title: 'Triagem Backend IA Concluída',
+          message: `Recomendado: ${res.suggestedTechnicianName || 'Técnico de Plantão'} (Confiança: ${res.confidence || 94}%)`
+        });
+      }
+    } catch (err) {
+      console.debug('AI analyze call error:', err);
+    } finally {
+      setIsAnalyzingAi(false);
+    }
+  };
 
   // If initialEquipmentId was passed, preload data
   useEffect(() => {
@@ -1677,9 +1727,20 @@ export const CreateCallModal: React.FC<CreateCallModalProps> = ({
               </div>
 
               <div className="sm:col-span-3">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                  Descrição do Problema Relatado
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                    Descrição do Problema Relatado
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAiAnalyze}
+                    disabled={isAnalyzingAi}
+                    className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer bg-cyan-950/40 px-2.5 py-1 rounded-lg border border-cyan-800/40 transition-colors disabled:opacity-50"
+                  >
+                    <Sparkles className={`w-3 h-3 ${isAnalyzingAi ? 'animate-spin' : ''}`} />
+                    {isAnalyzingAi ? 'Analisando via IA...' : 'Triagem Inteligente IA'}
+                  </button>
+                </div>
                 <textarea
                   rows={2}
                   value={problemDescription}
@@ -1687,6 +1748,29 @@ export const CreateCallModal: React.FC<CreateCallModalProps> = ({
                   placeholder="Ex: Equipamento travou entre o 3º e 4º andar com porta trancada. Alarme sonoro acionado..."
                   className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-500"
                 />
+
+                {aiAnalysisResult && (
+                  <div className="mt-2.5 p-3 rounded-xl bg-gradient-to-r from-cyan-950/60 to-indigo-950/40 border border-cyan-500/40 text-xs space-y-1.5 animate-in fade-in">
+                    <div className="flex items-center justify-between text-cyan-300 font-bold">
+                      <span className="flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        Triagem Automática Spring Boot IA ({aiAnalysisResult.confidence || 95}% de confiança)
+                      </span>
+                      <span className="text-[10px] bg-cyan-500/20 px-2 py-0.5 rounded text-cyan-200 border border-cyan-500/30">
+                        ETA Previsto: ~{aiAnalysisResult.estimatedTimeMin || 25} min
+                      </span>
+                    </div>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      {aiAnalysisResult.matchReason}
+                    </p>
+                    {aiAnalysisResult.recommendedParts && aiAnalysisResult.recommendedParts.length > 0 && (
+                      <div className="text-[11px] text-slate-300 pt-1.5 border-t border-cyan-900/40 flex items-center gap-1.5 flex-wrap">
+                        <span className="font-semibold text-cyan-400">Peças Recomendadas:</span>
+                        {aiAnalysisResult.recommendedParts.join(', ')}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

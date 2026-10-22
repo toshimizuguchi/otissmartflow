@@ -227,8 +227,20 @@ interface AppContextType {
   resetToCleanState: () => void;
 
   // Backend REST API Sync
-  apiConnection: { online: boolean; checked: boolean };
+  apiConnection: {
+    online: boolean;
+    checked: boolean;
+    reportsOnline: boolean;
+    apiUrl: string;
+    reportsUrl: string;
+    lastSyncTime?: string;
+    isSyncing?: boolean;
+    apiLatencyMs?: number;
+    reportsLatencyMs?: number;
+  };
   refreshFromBackend: () => Promise<void>;
+  updateContractStatus: (contractId: string, status: Contract['status']) => void;
+  setBackendUrls: (apiUrl: string, reportsUrl: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -406,23 +418,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   // Backend REST API Connection State
-  const [apiConnection, setApiConnection] = useState<{ online: boolean; checked: boolean }>({
+  const [apiConnection, setApiConnection] = useState<{
+    online: boolean;
+    checked: boolean;
+    reportsOnline: boolean;
+    apiUrl: string;
+    reportsUrl: string;
+    lastSyncTime?: string;
+    isSyncing?: boolean;
+    apiLatencyMs?: number;
+    reportsLatencyMs?: number;
+  }>({
     online: false,
-    checked: false
+    checked: false,
+    reportsOnline: false,
+    apiUrl: apiService.config.getApiUrl(),
+    reportsUrl: apiService.config.getReportsUrl()
   });
 
+  const setBackendUrls = (apiUrl: string, reportsUrl: string) => {
+    apiService.config.setApiUrl(apiUrl);
+    apiService.config.setReportsUrl(reportsUrl);
+    setApiConnection(prev => ({
+      ...prev,
+      apiUrl: apiService.config.getApiUrl(),
+      reportsUrl: apiService.config.getReportsUrl()
+    }));
+    refreshFromBackend();
+  };
+
   const refreshFromBackend = async () => {
+    setApiConnection(prev => ({ ...prev, isSyncing: true }));
     try {
       const health = await apiService.system.checkHealth();
-      setApiConnection({ online: health.apiOnline, checked: true });
+      const nowStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setApiConnection({
+        online: health.apiOnline,
+        checked: true,
+        reportsOnline: health.reportsOnline,
+        apiUrl: apiService.config.getApiUrl(),
+        reportsUrl: apiService.config.getReportsUrl(),
+        lastSyncTime: nowStr,
+        isSyncing: false,
+        apiLatencyMs: health.apiLatencyMs,
+        reportsLatencyMs: health.reportsLatencyMs
+      });
+
       if (health.apiOnline) {
-        const [apiEqs, apiTechs, apiCalls, apiContracts, apiParts, apiEmployees, apiCampaigns, apiAlerts] = await Promise.all([
+        const [apiEqs, apiTechs, apiCalls, apiContracts, apiParts, apiPartReqs, apiEmployees, apiPunches, apiCampaigns, apiAlerts] = await Promise.all([
           apiService.equipments.getAll(),
           apiService.technicians.getAll(),
           apiService.calls.getAll(),
           apiService.contracts.getAll(),
           apiService.parts.getAll(),
+          apiService.parts.getRequests(),
           apiService.employees.getAll(),
+          apiService.employees.getPunches(),
           apiService.campaigns.getAll(),
           apiService.alerts.getAll()
         ]);
@@ -446,7 +497,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           });
         }
         if (apiContracts && apiContracts.length > 0) {
-          setContracts(apiContracts);
+          setContracts(prev => {
+            const apiIds = new Set(apiContracts.map(c => c.id));
+            return [...apiContracts, ...prev.filter(c => !apiIds.has(c.id))];
+          });
         }
         if (apiParts && apiParts.length > 0) {
           setParts(prev => {
@@ -454,10 +508,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             return [...apiParts, ...prev.filter(p => !apiIds.has(p.id))];
           });
         }
+        if (apiPartReqs && apiPartReqs.length > 0) {
+          setPartRequests(prev => {
+            const apiIds = new Set(apiPartReqs.map(r => r.id));
+            return [...apiPartReqs, ...prev.filter(r => !apiIds.has(r.id))];
+          });
+        }
         if (apiEmployees && apiEmployees.length > 0) {
           setEmployees(prev => {
             const apiIds = new Set(apiEmployees.map(e => e.id));
             return [...apiEmployees, ...prev.filter(e => !apiIds.has(e.id))];
+          });
+        }
+        if (apiPunches && apiPunches.length > 0) {
+          setTimePunches(prev => {
+            const apiIds = new Set(apiPunches.map(p => p.id));
+            return [...apiPunches, ...prev.filter(p => !apiIds.has(p.id))];
           });
         }
         if (apiCampaigns && apiCampaigns.length > 0) {
@@ -475,6 +541,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch (err) {
       console.warn('Backend API Sync note:', err);
+      setApiConnection(prev => ({ ...prev, isSyncing: false, checked: true }));
     }
   };
 
@@ -1154,10 +1221,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setEquipments((prev) =>
       prev.map((e) => (e.id === equipmentId ? { ...e, status } : e))
     );
+    apiService.equipments.updateStatus(equipmentId, status).catch(err => console.debug('Offline equipment status update:', err));
     addToast({
       type: 'info',
       title: 'Equipamento Atualizado',
       message: `Status alterado para ${status}.`
+    });
+  };
+
+  const updateContractStatus = (contractId: string, status: Contract['status']) => {
+    setContracts((prev) =>
+      prev.map((c) => (c.id === contractId ? { ...c, status } : c))
+    );
+    apiService.contracts.updateStatus(contractId, status).catch(err => console.debug('Offline contract status update:', err));
+    addToast({
+      type: 'info',
+      title: 'Contrato Atualizado',
+      message: `Status do contrato alterado para ${status}.`
     });
   };
 
@@ -1179,6 +1259,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setCampaigns((prev) => [newCamp, ...prev]);
+    apiService.campaigns.create(newCamp).catch(err => console.debug('Offline campaign save:', err));
 
     addTechActivityLog({
       type: 'INSPECAO_PREVENTIVA',
@@ -1219,6 +1300,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return c;
       })
     );
+    apiService.campaigns.advance(campaignId, count).catch(err => console.debug('Offline campaign advance:', err));
 
     // Reduce risk on actual matching elevators in the system
     setEquipments((prevEq) =>
@@ -1271,6 +1353,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteCampaign = (campaignId: string) => {
     setCampaigns((prev) => prev.filter((c) => c.id !== campaignId));
+    apiService.campaigns.delete(campaignId).catch(err => console.debug('Offline campaign delete:', err));
     addToast({
       type: 'info',
       title: 'Campanha Excluída',
@@ -1286,10 +1369,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAlerts((prev) =>
       prev.map((a) => (a.id === alertId ? { ...a, read: true } : a))
     );
+    apiService.alerts.markRead(alertId).catch(err => console.debug('Offline alert read:', err));
   };
 
   const markAllAlertsAsRead = () => {
     setAlerts((prev) => prev.map((a) => ({ ...a, read: true })));
+    apiService.alerts.markAllRead().catch(err => console.debug('Offline alert read-all:', err));
     addToast({
       type: 'success',
       title: 'Alertas Lidos',
@@ -1313,6 +1398,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : a
       )
     );
+    apiService.alerts.resolve(alertId, resolutionNote).catch(err => console.debug('Offline alert resolve:', err));
     addToast({
       type: 'success',
       title: 'Alerta Resolvido',
@@ -1443,6 +1529,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setPartRequests((prev) => [newReq, ...prev]);
+    apiService.parts.createRequest(newReq).catch(err => console.debug('Offline part request:', err));
 
     // Automatically record to TechActivityLogs
     addTechActivityLog({
@@ -1577,6 +1664,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return emp;
       })
     );
+    apiService.employees.approveBonus(employeeId, approved).catch(err => console.debug('Offline bonus approve:', err));
 
     const targetEmp = employees.find((e) => e.id === employeeId);
     if (notifySupervisorFlag && supervisorMessage) {
@@ -1617,6 +1705,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return emp;
       })
     );
+    apiService.employees.approveOvertime(employeeId, approved).catch(err => console.debug('Offline overtime approve:', err));
 
     const targetEmp = employees.find((e) => e.id === employeeId);
     if (notifySupervisorFlag && supervisorMessage) {
@@ -1727,6 +1816,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setTimePunches((prev) => [newPunch, ...prev]);
+    apiService.employees.registerPunch(newPunch).catch(err => console.debug('Offline punch save:', err));
 
     // Update Employee record with punch status and calculation
     setEmployees((prev) =>
@@ -1873,7 +1963,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setTheme,
         resetToCleanState,
         apiConnection,
-        refreshFromBackend
+        refreshFromBackend,
+        updateContractStatus,
+        setBackendUrls
       }}
     >
       {children}
