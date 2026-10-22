@@ -1,0 +1,780 @@
+@import "tailwindcss";
+
+
+/* ================================================================
+   OTIS SmartFlow — Sistema de Gestão de Elevadores
+   Design: ERP Corporativo — sem AI, sem neon, feito para trabalhar
+   ================================================================ */
+
+@layer base {
+  :root {
+    --bg-base:    #0f1117;
+    --bg-panel:   #161a22;
+    --bg-card:    #1d2129;
+    --bg-hover:   #232830;
+    --border:     #2a303c;
+    --border-lg:  #1e2431;
+    --txt-1:      #e4e8f0;
+    --txt-2:      #9ba3b4;
+    --txt-3:      #5a6375;
+    --blue:       #2563eb;
+    --blue-lt:    #3b82f6;
+    --blue-dim:   #1e3a5f;
+    --blue-muted: #1a2e4a;
+    --red:        #dc2626;
+    --red-dim:    #2d1414;
+    --amber:      #d97706;
+    --amber-dim:  #2d1e08;
+    --green:      #16a34a;
+    --green-dim:  #0f2818;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { font-size: 14px; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-base);
+    color: var(--txt-1);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ================================================================
+   SCROLLBARS
+   ================================================================ */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a303c; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #3a4255; }
+
+/* ================================================================
+   NEUTRALIZE: Remover todos os efeitos "AI" do Tailwind herdados
+   ================================================================ */
+
+/* Fundo global */
+.bg-slate-950, .bg-slate-950\/90, .bg-slate-950\/80,
+.bg-slate-950\/70, .bg-slate-950\/60 {
+  background-color: var(--bg-base) !important;
+}
+
+.bg-slate-900, .bg-slate-900\/90, .bg-slate-900\/80,
+.bg-slate-900\/60, .bg-slate-900\/40 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Grid de fundo neon — eliminar */
+.tech-grid-bg {
+  background-image: none !important;
+  background-color: var(--bg-base) !important;
+}
+
+/* Bordas */
+.border-slate-800, .border-slate-800\/80, .border-slate-800\/60,
+.border-slate-800\/90, .border-slate-800\/40 {
+  border-color: var(--border) !important;
+}
+
+.border-slate-700, .border-slate-700\/50, .border-slate-700\/60,
+.border-slate-700\/70 {
+  border-color: #323849 !important;
+}
+
+/* Gradientes: transformar em superfícies planas */
+[class*="from-slate-9"][class*="via-blue-950"],
+[class*="from-slate-9"][class*="via-indigo-950"],
+[class*="bg-gradient-to-r"][class*="from-slate-9"],
+[class*="bg-gradient-to-br"][class*="from-slate-9"],
+[class*="bg-gradient-to-r"][class*="from-indigo-950"],
+[class*="bg-gradient-to-br"][class*="from-indigo-950"] {
+  background-image: none !important;
+  background-color: var(--bg-card) !important;
+}
+
+/* Cyan neon → Azul corporativo */
+.bg-cyan-500, .bg-cyan-500\/20, .bg-cyan-500\/15, .bg-cyan-500\/10 {
+  background-color: var(--blue-muted) !important;
+}
+.text-cyan-300, .text-cyan-400 {
+  color: #93bbf5 !important;
+}
+.text-cyan-200 {
+  color: var(--txt-1) !important;
+}
+.border-cyan-500, .border-cyan-500\/30, .border-cyan-500\/40,
+.border-cyan-500\/50, .border-cyan-500\/60 {
+  border-color: #2563eb60 !important;
+}
+
+/* Texto branco → texto natural */
+.text-white { color: var(--txt-1) !important; }
+.text-slate-100 { color: var(--txt-1) !important; }
+.text-slate-200 { color: #c8d0de !important; }
+.text-slate-300 { color: #9ba3b4 !important; }
+.text-slate-400 { color: var(--txt-3) !important; }
+
+/* Rounded excessivos → moderados */
+.rounded-2xl { border-radius: 8px !important; }
+.rounded-xl  { border-radius: 6px !important; }
+.rounded-lg  { border-radius: 5px !important; }
+.rounded-full:not(img):not([class*="w-2"]):not([class*="w-1.5"]):not([class*="w-1"]):not([class*="h-2"]):not([class*="h-1"]):not(.status-dot) {
+  border-radius: 4px !important;
+}
+
+/* Animações desnecessárias — desligar */
+.animate-pulse  { animation: none !important; }
+.animate-ping   { animation: none !important; }
+.animate-bounce { animation: none !important; }
+.radar-sweep    { animation: none !important; }
+.pulse-slow     { animation: none !important; }
+
+/* Gradientes de botão → botão flat */
+[class*="bg-gradient-to-r"][class*="from-cyan"],
+[class*="from-cyan-5"][class*="to-blue-6"],
+[class*="from-cyan-6"][class*="to-blue-6"],
+[class*="from-cyan-4"][class*="to-blue-5"] {
+  background: var(--blue) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+[class*="from-emerald-6"][class*="to-teal-6"],
+[class*="from-emerald-5"][class*="to-teal-5"] {
+  background: #166534 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Ring glow — remover */
+[class*="ring-cyan"], [class*="ring-1"], [class*="ring-2"] {
+  --tw-ring-shadow: none !important;
+  box-shadow: var(--tw-ring-shadow, none) !important;
+}
+
+/* Shadow neon */
+[class*="shadow-cyan"], [class*="shadow-blue"],
+[class*="shadow-emerald"], [class*="shadow-indigo"] {
+  --tw-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* ================================================================
+   CARDS — Estilo limpo
+   ================================================================ */
+[class*="rounded"][class*="bg-slate-9"],
+[class*="rounded"][class*="border-slate-8"] {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.35) !important;
+  transition: border-color 0.12s ease !important;
+}
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+header {
+  background: var(--bg-panel) !important;
+  border-bottom: 1px solid var(--border) !important;
+  backdrop-filter: none !important;
+}
+
+header h1, header h2, header span.font-bold {
+  letter-spacing: -0.01em;
+}
+
+/* ================================================================
+   SIDEBAR
+   ================================================================ */
+aside {
+  background: var(--bg-panel) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+/* Botão ativo na sidebar */
+aside button[style*="background-color: rgb(30, 58, 95)"],
+aside button[style*="#1e3a5f"] {
+  background-color: var(--blue-dim) !important;
+  border-left: 3px solid var(--blue-lt) !important;
+}
+
+/* ================================================================
+   MAIN CONTENT
+   ================================================================ */
+main {
+  /* Cor base mantida (#0f1117). Só a textura foi adicionada por cima.
+     Paleta usada: #00A3E0 (cyan) · #005691 (azul ação) · #002B49 (azul OTIS) */
+  background-color: var(--bg-base) !important;
+  background-image:
+    /* 1) pontinhos em grade (cyan, bem sutil) */
+    radial-gradient(rgba(0, 163, 224, 0.07) 1px, transparent 1.2px),
+    /* 2) brilho suave no canto superior esquerdo (azul ação) */
+    radial-gradient(ellipse 70% 55% at 0% 0%, rgba(0, 86, 145, 0.20), transparent 70%),
+    /* 3) brilho suave no canto inferior direito (azul OTIS) */
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(0, 43, 73, 0.40), transparent 70%),
+    /* 4) granulado fino (ruído) */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.6  0 0 0 0 0.75  0 0 0 0 1  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>") !important;
+  background-size: 24px 24px, auto, auto, 180px 180px !important;
+  background-repeat: repeat, no-repeat, no-repeat, repeat !important;
+}
+
+/* ================================================================
+   MODAIS e OVERLAYS
+   ================================================================ */
+[class*="fixed"][class*="inset-0"]:not(aside > div),
+[class*="absolute"][class*="rounded-2xl"] {
+  /* dropdowns / modals */
+}
+
+/* Backgrounds de modal */
+[class*="bg-slate-9"][class*="rounded"][class*="border"][class*="shadow-2xl"],
+[class*="bg-slate-9"][class*="rounded"][class*="border"][class*="shadow-xl"] {
+  background-color: var(--bg-panel) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+  border-radius: 8px !important;
+}
+
+/* ================================================================
+   INPUTS e FORMS
+   ================================================================ */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+select,
+textarea {
+  background-color: var(--bg-base) !important;
+  border-color: var(--border) !important;
+  color: var(--txt-1) !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  transition: border-color 0.12s ease !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue-lt) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.15) !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--txt-3) !important;
+}
+
+/* ================================================================
+   BOTÕES — sobrescrever estilos herdados
+   ================================================================ */
+button {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  letter-spacing: 0 !important;
+}
+
+/* Botão primário padrão (bg-cyan ou bg-gradient) */
+button[class*="from-cyan"],
+button[class*="bg-cyan-5"],
+button[class*="bg-gradient"][class*="from-cyan"] {
+  background: var(--blue) !important;
+  background-image: none !important;
+  color: white !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+button[class*="from-cyan"]:hover,
+button[class*="bg-cyan-5"]:hover {
+  background: #1d4ed8 !important;
+}
+
+/* ================================================================
+   TABELAS — zebra sutil, bordas reais
+   ================================================================ */
+table { border-collapse: collapse; }
+thead th {
+  background: var(--bg-panel) !important;
+  color: var(--txt-3) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 9px 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+tbody tr td {
+  padding: 10px 14px !important;
+  border-bottom: 1px solid #1e2431 !important;
+  color: var(--txt-2) !important;
+  font-size: 13px !important;
+}
+tbody tr:hover td { background: var(--bg-hover) !important; }
+tbody tr:last-child td { border-bottom: none !important; }
+
+/* ================================================================
+   STATUS BADGES — flat, legíveis
+   ================================================================ */
+/* Pills de status existentes */
+[class*="bg-rose-500"][class*="text-white"]:not(button),
+[class*="bg-rose-500\/"] { 
+  background-color: var(--red-dim) !important;
+  color: #fca5a5 !important;
+}
+[class*="bg-emerald-950"], [class*="bg-emerald-500\/10"],
+[class*="bg-emerald-500\/20"] {
+  background-color: var(--green-dim) !important;
+}
+[class*="bg-amber-950"], [class*="bg-amber-500\/10"],
+[class*="bg-amber-500\/20"] {
+  background-color: var(--amber-dim) !important;
+}
+[class*="bg-sky-950"], [class*="bg-indigo-950"] {
+  background-color: var(--blue-muted) !important;
+}
+
+/* ================================================================
+   TIPOGRAFIA
+   ================================================================ */
+h1 {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: var(--txt-1) !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.25 !important;
+}
+h2, h3 {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #c8d0de !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* ================================================================
+   NAVIGATION BREADCRUMB / PAGE HEADER
+   ================================================================ */
+.page-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+
+/* ================================================================
+   TOASTS
+   ================================================================ */
+[class*="bottom-5"][class*="right-5"] > div {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+}
+
+/* ================================================================
+   RECHARTS
+   ================================================================ */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--border) !important;
+}
+.recharts-text { fill: var(--txt-3) !important; }
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--bg-panel) !important;
+  border-color: var(--border) !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+}
+
+/* ================================================================
+   SELECTION
+   ================================================================ */
+::selection {
+  background: rgba(59,130,246,0.25);
+  color: var(--txt-1);
+}
+
+/* ================================================================
+   COMPONENTES DE CARDS (sobrescrever padding/border)
+   ================================================================ */
+.card-erp, .panel, .metric-card {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+}
+
+/* ================================================================
+   FUNDO DA SIDEBAR — garantir consistência
+   ================================================================ */
+.sidebar-erp, aside.hidden {
+  background-color: var(--bg-panel) !important;
+}
+
+/* ================================================================
+   BADGES INLINE HOVER STATES — remover scale
+   ================================================================ */
+[class*="hover:scale"] {
+  --tw-scale-x: 1 !important;
+  --tw-scale-y: 1 !important;
+}
+
+/* ================================================================
+   OVERRIDE ESPECÍFICO: cards do dashboard que usam inline style
+   ================================================================ */
+/* Garante que divs com bg-card inline fiquem corretos */
+div[style*="#242830"] { background-color: #1d2129 !important; }
+div[style*="#1e2128"] { background-color: #161a22 !important; }
+div[style*="#1a1d23"] { background-color: #0f1117 !important; }
+div[style*="#252930"] { background-color: #232830 !important; }
+
+/* ================================================================
+   FONT MONO → Regular nas labels (menos robótico)
+   ================================================================ */
+.font-mono {
+  font-family: 'Inter', monospace !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em !important;
+}
+
+/* Números grandes — usar tabular */
+[class*="text-2xl"], [class*="text-3xl"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================================================================
+   GRADIENTES EM BOTÕES DE AÇÃO
+   ================================================================ */
+button[class*="from-cyan-5"][class*="to-blue-6"] {
+  background: var(--blue) !important;
+  background-image: none !important;
+}
+
+/* ================================================================
+   MOBILE & SAFE AREA
+   ================================================================ */
+.safe-bottom {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 8px)) !important;
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px) !important;
+}
+
+/* Touch targets & responsive behaviors */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+  h1 { font-size: 17px !important; }
+  h2, h3 { font-size: 13px !important; }
+
+  /* Prevent automatic zoom on iOS inputs */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Smooth scrolling on mobile horizontal and vertical scrolls */
+  .overflow-y-auto, .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reposition floating toast notifications above mobile bottom bar */
+  .toast-container-root {
+    bottom: calc(env(safe-area-inset-bottom, 8px) + 68px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  /* Custom drawer slide animation */
+  @keyframes slideInFromLeft {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .mobile-drawer-content {
+    animation: slideInFromLeft 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+
+/* ================================================================
+   LEAFLET & OPENSTREETMAP CUSTOM THEME
+   ================================================================ */
+.leaflet-container {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  background-color: #0f1117 !important;
+}
+.leaflet-popup-content-wrapper {
+  background: #161a22 !important;
+  color: #e4e8f0 !important;
+  border: 1px solid #2a303c !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content {
+  margin: 10px !important;
+  line-height: 1.4 !important;
+}
+.leaflet-popup-tip {
+  background: #161a22 !important;
+  border: 1px solid #2a303c !important;
+}
+.leaflet-popup-close-button {
+  color: #9ba3b4 !important;
+  padding: 6px !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}
+.leaflet-bar {
+  border: 1px solid #2a303c !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+.leaflet-bar a {
+  background-color: #161a22 !important;
+  color: #e4e8f0 !important;
+  border-bottom: 1px solid #2a303c !important;
+  transition: all 0.15s ease;
+}
+.leaflet-bar a:hover {
+  background-color: #232830 !important;
+  color: #38bdf8 !important;
+}
+.leaflet-control-attribution {
+  background: rgba(15, 17, 23, 0.88) !important;
+  color: #9ba3b4 !important;
+  font-size: 10px !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  backdrop-filter: blur(4px);
+}
+.leaflet-control-attribution a {
+  color: #38bdf8 !important;
+}
+
+/* Custom Marker Pulsing & Animations */
+@keyframes radar-pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0.2; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.tech-ping {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  animation: radar-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+
+/* ================================================================
+   SIDEBAR — tamanhos de fonte (editar aqui para ajustar)
+   Antes: botões 13px · títulos 10px · textos pequenos 10-11px
+   ================================================================ */
+.sidebar-body button                { font-size: 15px !important; }   /* itens do menu, Registrar Ponto, Sair */
+.sidebar-body .sb-section-title     { font-size: 12px !important; }   /* GOVERNANÇA EXECUTIVA etc. */
+.sidebar-body .sb-badge             { font-size: 12px !important; }   /* contador vermelho */
+.sidebar-body .sb-user-name         { font-size: 14px !important; }
+.sidebar-body .sb-user-sub          { font-size: 12px !important; }
+.sidebar-body .sb-ponto-label       { font-size: 13px !important; }   /* Ponto Eletrônico */
+.sidebar-body .sb-clock             { font-size: 14px !important; }   /* relógio */
+.sidebar-body .sb-status-label      { font-size: 12px !important; }
+.sidebar-body .sb-status-badge      { font-size: 12px !important; }
+.sidebar-body .sb-footer            { font-size: 11px !important; }
+
+/* ================================================================
+   HEADER — tamanhos de fonte (editar aqui para ajustar)
+   Altura do header: h-[64px] em components/layout/Header.tsx (antes 52px)
+   Antes: botões 13px · títulos/rótulos 10-11px
+   ================================================================ */
+header > div > button,
+header .relative > button             { font-size: 15px !important; }   /* Perfil, Assistente, usuário */
+header .hdr-title                     { font-size: 20px !important; }   /* OTIS SmartFlow */
+header .hdr-subtitle                  { font-size: 14px !important; }   /* Gestão de Elevadores & Contratos */
+header .hdr-status                    { font-size: 12px !important; }   /* Sistema Operacional */
+header .hdr-perfil-label              { font-size: 12px !important; }   /* PERFIL: */
+header .hdr-user-name                 { font-size: 14px !important; }
+header .hdr-user-role                 { font-size: 12px !important; }
+
+/* ================================================================
+   PÁGINAS FLUIDAS (.fluid-page) — letras, ícones e espaços se
+   adaptam à largura da tela (notebook pequeno → monitor 28").
+   Para usar numa página: coloque className="fluid-page" na div
+   mais de fora do componente. Cada valor é clamp(mínimo, ideal, máximo).
+   ================================================================ */
+.fluid-page [class~="text-[9px]"],
+.fluid-page [class~="text-[10px]"]  { font-size: clamp(11px, 0.66vw, 13px) !important; }
+.fluid-page [class~="text-[11px]"]  { font-size: clamp(12px, 0.72vw, 14px) !important; }
+.fluid-page [class~="text-xs"],
+.fluid-page [class~="sm:text-xs"]   { font-size: clamp(12px, 0.78vw, 15px) !important; }
+.fluid-page [class~="text-sm"],
+.fluid-page [class~="sm:text-sm"]   { font-size: clamp(13px, 0.86vw, 16px) !important; }
+.fluid-page [class~="text-base"]    { font-size: clamp(14px, 0.95vw, 18px) !important; }
+.fluid-page [class~="text-lg"]      { font-size: clamp(16px, 1.05vw, 20px) !important; }
+.fluid-page [class~="text-xl"]      { font-size: clamp(18px, 1.25vw, 24px) !important; }
+.fluid-page [class~="text-2xl"],
+.fluid-page [class~="sm:text-2xl"]  { font-size: clamp(21px, 1.5vw, 30px) !important; }
+.fluid-page [class~="text-3xl"]     { font-size: clamp(24px, 1.8vw, 36px) !important; }
+
+/* botões, selects e campos sem tamanho próprio */
+.fluid-page button,
+.fluid-page select,
+.fluid-page input                   { font-size: clamp(12px, 0.8vw, 15px) !important; }
+
+/* ícones (lucide) */
+.fluid-page svg[class~="w-3"],
+.fluid-page svg[class~="w-3.5"]     { width: clamp(14px, 0.9vw, 18px) !important; height: clamp(14px, 0.9vw, 18px) !important; }
+.fluid-page svg[class~="w-4"]       { width: clamp(16px, 1vw, 20px) !important;   height: clamp(16px, 1vw, 20px) !important; }
+.fluid-page svg[class~="w-5"]       { width: clamp(20px, 1.25vw, 26px) !important; height: clamp(20px, 1.25vw, 26px) !important; }
+
+/* espaço interno dos cards */
+.fluid-page [class~="p-2"]          { padding: clamp(8px, 0.6vw, 12px) !important; }
+.fluid-page [class~="p-2.5"]        { padding: clamp(10px, 0.75vw, 14px) !important; }
+.fluid-page [class~="p-3"]          { padding: clamp(12px, 0.85vw, 16px) !important; }
+.fluid-page [class~="p-3.5"]        { padding: clamp(14px, 0.95vw, 18px) !important; }
+.fluid-page [class~="p-4"]          { padding: clamp(16px, 1.1vw, 24px) !important; }
+.fluid-page [class~="p-5"]          { padding: clamp(20px, 1.3vw, 30px) !important; }
+
+/* ================================================================
+   CARDS DOS POLOS (página Desempenho Regional) — maiores
+   Colar DEPOIS do bloco "PÁGINAS FLUIDAS" no fim do index.css
+   ================================================================ */
+.polo-card .pc-num     { width: clamp(24px, 1.7vw, 34px) !important; height: clamp(24px, 1.7vw, 34px) !important; font-size: clamp(12px, 0.85vw, 16px) !important; }
+.polo-card .pc-title   { font-size: clamp(15px, 1.05vw, 20px) !important; }
+.polo-card .pc-sub     { font-size: clamp(12px, 0.85vw, 15px) !important; }
+.polo-card .pc-badge   { font-size: clamp(12px, 0.9vw, 16px) !important; }
+.polo-card .pc-label   { font-size: clamp(12px, 0.85vw, 15px) !important; }
+.polo-card .pc-value   { font-size: clamp(15px, 1vw, 19px) !important; }
+.polo-card .pc-tile    { padding: clamp(10px, 0.8vw, 15px) clamp(12px, 0.9vw, 16px) !important; }
+.polo-card .pc-box     { padding: clamp(10px, 0.8vw, 15px) clamp(12px, 0.9vw, 16px) !important; }
+.polo-card .pc-row     { font-size: clamp(13px, 0.92vw, 17px) !important; }
+.polo-card .pc-foot    { font-size: clamp(12px, 0.85vw, 15px) !important; }
+.polo-card .pc-link    { font-size: clamp(13px, 0.95vw, 17px) !important; }
+
+/* ================================================================
+   FLUID PLUS — versão MAIOR do .fluid-page (letras e espaços)
+   Para usar: className="fluid-page fluid-plus" na div de fora da página.
+   Colar no FIM do index.css, depois do bloco "PÁGINAS FLUIDAS".
+   ================================================================ */
+.fluid-page.fluid-plus [class~="text-[9px]"],
+.fluid-page.fluid-plus [class~="text-[10px]"] { font-size: clamp(12px, 0.78vw, 15px) !important; }
+.fluid-page.fluid-plus [class~="text-[11px]"] { font-size: clamp(13px, 0.86vw, 16px) !important; }
+.fluid-page.fluid-plus [class~="text-xs"],
+.fluid-page.fluid-plus [class~="sm:text-xs"]  { font-size: clamp(13px, 0.88vw, 17px) !important; }
+.fluid-page.fluid-plus [class~="text-sm"],
+.fluid-page.fluid-plus [class~="sm:text-sm"]  { font-size: clamp(14px, 0.95vw, 18px) !important; }
+.fluid-page.fluid-plus [class~="text-base"]   { font-size: clamp(15px, 1.05vw, 20px) !important; }
+.fluid-page.fluid-plus [class~="text-lg"]     { font-size: clamp(17px, 1.2vw, 23px) !important; }
+.fluid-page.fluid-plus [class~="text-xl"]     { font-size: clamp(20px, 1.4vw, 27px) !important; }
+.fluid-page.fluid-plus [class~="text-2xl"],
+.fluid-page.fluid-plus [class~="sm:text-2xl"] { font-size: clamp(23px, 1.7vw, 33px) !important; }
+
+.fluid-page.fluid-plus button,
+.fluid-page.fluid-plus select,
+.fluid-page.fluid-plus input,
+.fluid-page.fluid-plus textarea               { font-size: clamp(13px, 0.88vw, 17px) !important; }
+
+.fluid-page.fluid-plus svg[class~="w-3"],
+.fluid-page.fluid-plus svg[class~="w-3.5"]    { width: clamp(15px, 1vw, 20px) !important;   height: clamp(15px, 1vw, 20px) !important; }
+.fluid-page.fluid-plus svg[class~="w-4"]      { width: clamp(17px, 1.1vw, 22px) !important; height: clamp(17px, 1.1vw, 22px) !important; }
+.fluid-page.fluid-plus svg[class~="w-5"]      { width: clamp(22px, 1.4vw, 28px) !important; height: clamp(22px, 1.4vw, 28px) !important; }
+.fluid-page.fluid-plus [class~="w-12"][class~="h-12"] { width: clamp(44px, 3vw, 60px) !important; height: clamp(44px, 3vw, 60px) !important; }
+
+.fluid-page.fluid-plus [class~="p-2"]         { padding: clamp(9px, 0.7vw, 14px) !important; }
+.fluid-page.fluid-plus [class~="p-2.5"]       { padding: clamp(11px, 0.85vw, 16px) !important; }
+.fluid-page.fluid-plus [class~="p-3"]         { padding: clamp(13px, 0.95vw, 18px) !important; }
+.fluid-page.fluid-plus [class~="p-3.5"]       { padding: clamp(15px, 1.05vw, 20px) !important; }
+.fluid-page.fluid-plus [class~="p-4"]         { padding: clamp(17px, 1.2vw, 26px) !important; }
+.fluid-page.fluid-plus [class~="p-5"]         { padding: clamp(21px, 1.5vw, 32px) !important; }
+
+/* ================================================================
+   MEDIDOR DE RISCO (RiskGauge) dentro de páginas fluidas
+   Colar no FIM do index.css, depois do bloco "FLUID PLUS — extra 2".
+   ================================================================ */
+.fluid-page .rg-box   { width: clamp(48px, 3.3vw, 68px) !important; height: clamp(48px, 3.3vw, 68px) !important; }
+.fluid-page .rg-svg   { width: 100% !important; height: 100% !important; }
+.fluid-page .rg-num   { font-size: clamp(11px, 0.78vw, 15px) !important; }
+.fluid-page .rg-title { font-size: clamp(13px, 0.9vw, 17px) !important; }
+.fluid-page .rg-level { font-size: clamp(12px, 0.84vw, 16px) !important; }
+.fluid-page .rg-wrap  { gap: clamp(12px, 0.9vw, 18px) !important; }
+
+/* ================================================================
+   PADRÃO ÚNICO DE TAMANHOS (colar no FIM do index.css)
+   Vale para todas as páginas com className="fluid-page".
+   Ele SOBRESCREVE os blocos fluid-page / fluid-plus anteriores.
+   Escala: título da página 21px · títulos de bloco 15px ·
+   TODO o resto (texto, botões, tabelas, campos) 13.5px.
+   Para deixar tudo um pouco maior ou menor, mude só os 3 valores
+   marcados com ◄ (o do meio de cada clamp é o que cresce com a tela).
+   ================================================================ */
+.fluid-page.fluid-page.fluid-page h1                         { font-size: clamp(19px, 1.2vw, 22px) !important; line-height: 1.25 !important; }   /* ◄ título da página */
+.fluid-page.fluid-page.fluid-page h2,
+.fluid-page.fluid-page.fluid-page h3                         { font-size: clamp(14px, 0.85vw, 16px) !important; }                                /* ◄ títulos de blocos */
+
+/* texto comum: tudo igual */
+.fluid-page.fluid-page.fluid-page [class~="text-[9px]"],
+.fluid-page.fluid-page.fluid-page [class~="text-[10px]"],
+.fluid-page.fluid-page.fluid-page [class~="text-[11px]"],
+.fluid-page.fluid-page.fluid-page [class~="text-xs"],
+.fluid-page.fluid-page.fluid-page [class~="sm:text-xs"],
+.fluid-page.fluid-page.fluid-page [class~="text-sm"],
+.fluid-page.fluid-page.fluid-page [class~="sm:text-sm"],
+.fluid-page.fluid-page.fluid-page button,
+.fluid-page.fluid-page.fluid-page select,
+.fluid-page.fluid-page.fluid-page input,
+.fluid-page.fluid-page.fluid-page textarea                   { font-size: clamp(12.5px, 0.74vw, 14px) !important; }                              /* ◄ texto geral */
+
+/* números grandes e destaques */
+.fluid-page.fluid-page.fluid-page [class~="text-base"],
+.fluid-page.fluid-page.fluid-page [class~="text-lg"]         { font-size: clamp(14px, 0.85vw, 16px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="text-xl"]         { font-size: clamp(16px, 1vw, 19px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="text-2xl"],
+.fluid-page.fluid-page.fluid-page [class~="sm:text-2xl"]     { font-size: clamp(18px, 1.15vw, 21px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="text-3xl"]        { font-size: clamp(20px, 1.3vw, 24px) !important; }
+
+/* ícones */
+.fluid-page.fluid-page.fluid-page svg[class~="w-3"],
+.fluid-page.fluid-page.fluid-page svg[class~="w-3.5"]        { width: clamp(13px, 0.8vw, 16px) !important; height: clamp(13px, 0.8vw, 16px) !important; }
+.fluid-page.fluid-page.fluid-page svg[class~="w-4"]          { width: clamp(15px, 0.9vw, 18px) !important; height: clamp(15px, 0.9vw, 18px) !important; }
+.fluid-page.fluid-page.fluid-page svg[class~="w-5"]          { width: clamp(17px, 1vw, 21px) !important;   height: clamp(17px, 1vw, 21px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="w-6"][class~="h-6"]   { width: clamp(22px, 1.3vw, 26px) !important; height: clamp(22px, 1.3vw, 26px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="w-7"][class~="h-7"]   { width: clamp(26px, 1.5vw, 30px) !important; height: clamp(26px, 1.5vw, 30px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="w-10"][class~="h-10"] { width: clamp(36px, 2.1vw, 42px) !important; height: clamp(36px, 2.1vw, 42px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="w-11"][class~="h-11"] { width: clamp(38px, 2.2vw, 44px) !important; height: clamp(38px, 2.2vw, 44px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="w-12"][class~="h-12"] { width: clamp(40px, 2.4vw, 48px) !important; height: clamp(40px, 2.4vw, 48px) !important; }
+
+/* espaço interno dos cards */
+.fluid-page.fluid-page.fluid-page [class~="p-2"]             { padding: clamp(8px, 0.55vw, 10px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="p-2.5"]           { padding: clamp(10px, 0.65vw, 12px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="p-3"]             { padding: clamp(11px, 0.7vw, 14px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="p-3.5"]           { padding: clamp(12px, 0.8vw, 15px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="p-4"]             { padding: clamp(13px, 0.9vw, 17px) !important; }
+.fluid-page.fluid-page.fluid-page [class~="p-5"]             { padding: clamp(15px, 1vw, 20px) !important; }
+
+/* tabelas */
+.fluid-page.fluid-page.fluid-page thead th                   { font-size: clamp(11.5px, 0.7vw, 13px) !important; padding: clamp(8px, 0.55vw, 11px) clamp(12px, 0.8vw, 16px) !important; }
+.fluid-page.fluid-page.fluid-page tbody tr td                { font-size: clamp(12.5px, 0.74vw, 14px) !important; padding: clamp(8px, 0.6vw, 12px) clamp(12px, 0.8vw, 16px) !important; }
+
+/* medidor de risco */
+.fluid-page.fluid-page.fluid-page .rg-box                    { width: clamp(44px, 2.7vw, 54px) !important; height: clamp(44px, 2.7vw, 54px) !important; }
+.fluid-page.fluid-page.fluid-page .rg-num                    { font-size: clamp(11px, 0.68vw, 13px) !important; }
+.fluid-page.fluid-page.fluid-page .rg-title,
+.fluid-page.fluid-page.fluid-page .rg-level                  { font-size: clamp(12.5px, 0.74vw, 14px) !important; }
+
+/* cards dos polos (Desempenho Regional) */
+.fluid-page.fluid-page.fluid-page .polo-card .pc-title       { font-size: clamp(14px, 0.85vw, 16px) !important; }
+.fluid-page.fluid-page.fluid-page .polo-card .pc-sub,
+.fluid-page.fluid-page.fluid-page .polo-card .pc-badge,
+.fluid-page.fluid-page.fluid-page .polo-card .pc-label,
+.fluid-page.fluid-page.fluid-page .polo-card .pc-row,
+.fluid-page.fluid-page.fluid-page .polo-card .pc-foot,
+.fluid-page.fluid-page.fluid-page .polo-card .pc-link        { font-size: clamp(12.5px, 0.74vw, 14px) !important; }
+.fluid-page.fluid-page.fluid-page .polo-card .pc-value       { font-size: clamp(14px, 0.85vw, 16px) !important; }
+.fluid-page.fluid-page.fluid-page .polo-card .pc-num         { width: clamp(24px, 1.5vw, 28px) !important; height: clamp(24px, 1.5vw, 28px) !important; font-size: clamp(12px, 0.74vw, 14px) !important; }
+.fluid-page.fluid-page.fluid-page .polo-card .pc-tile,
+.fluid-page.fluid-page.fluid-page .polo-card .pc-box         { padding: clamp(9px, 0.65vw, 12px) !important; }
