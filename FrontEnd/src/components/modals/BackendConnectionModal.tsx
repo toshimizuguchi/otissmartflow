@@ -54,13 +54,13 @@ export const BackendConnectionModal: React.FC<BackendConnectionModalProps> = ({
       if (res.apiStatus === 'ONLINE') {
         addToast({
           type: 'success',
-          title: 'Spring Boot Conectado!',
+          title: 'Backend Node.js Conectado!',
           message: `Latência: ${res.apiLatency}ms. Todas as APIs REST respondendo.`
         });
       } else {
         addToast({
           type: 'warning',
-          title: 'Spring Boot Indisponível',
+          title: 'Backend Node.js Indisponível',
           message: 'Verifique se o backend está rodando no endpoint informado.'
         });
       }
@@ -119,7 +119,7 @@ export const BackendConnectionModal: React.FC<BackendConnectionModalProps> = ({
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
-                Integração REST com Spring Boot (Java) e Motor de Relatórios (Python FastAPI)
+                Integração REST com Node.js (Express) e Banco Supabase PostgreSQL
               </p>
             </div>
           </div>
@@ -135,7 +135,7 @@ export const BackendConnectionModal: React.FC<BackendConnectionModalProps> = ({
         <div className="p-5 overflow-y-auto space-y-5 text-xs text-slate-300">
           {/* Status Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Spring Boot API */}
+            {/* Node.js API */}
             <div className={`p-4 rounded-2xl border transition-all ${
               apiConnection.online
                 ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
@@ -144,7 +144,7 @@ export const BackendConnectionModal: React.FC<BackendConnectionModalProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold flex items-center gap-2 text-white">
                   <Database className="w-4 h-4 text-cyan-400" />
-                  Spring Boot API (Java 17)
+                  Core API Engine (Node.js & Express)
                 </span>
                 <span className={`w-2 h-2 rounded-full ${apiConnection.online ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
               </div>
@@ -159,26 +159,26 @@ export const BackendConnectionModal: React.FC<BackendConnectionModalProps> = ({
               </div>
             </div>
 
-            {/* Python FastAPI Reports */}
+            {/* Node.js Integrated Reports */}
             <div className={`p-4 rounded-2xl border transition-all ${
-              apiConnection.reportsOnline
+              apiConnection.online || apiConnection.reportsOnline
                 ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
                 : 'bg-slate-950/60 border-slate-800 text-slate-400'
             }`}>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold flex items-center gap-2 text-white">
                   <FileText className="w-4 h-4 text-indigo-400" />
-                  Reports Engine (Python 3)
+                  Motor de Relatórios (PDFKit & XLSX)
                 </span>
-                <span className={`w-2 h-2 rounded-full ${apiConnection.reportsOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
+                <span className={`w-2 h-2 rounded-full ${apiConnection.online || apiConnection.reportsOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
               </div>
               <p className="text-[11px] text-slate-400 mb-2">
-                Geração em lote de relatórios executivos em PDF ReportLab e planilhas Excel OpenPyXL.
+                Geração em lote de relatórios executivos em PDF e planilhas Excel nativo em Node.js.
               </p>
               <div className="flex items-center justify-between text-[11px] font-mono">
                 <span className="text-slate-500">Status:</span>
-                <span className={apiConnection.reportsOnline ? 'text-emerald-400 font-bold' : 'text-slate-400'}>
-                  {apiConnection.reportsOnline ? `ONLINE (${apiConnection.reportsLatencyMs || 30}ms)` : 'OFFLINE (Fallback Ativo)'}
+                <span className={apiConnection.online || apiConnection.reportsOnline ? 'text-emerald-400 font-bold' : 'text-slate-400'}>
+                  {apiConnection.online || apiConnection.reportsOnline ? `ONLINE (${apiConnection.apiLatencyMs || 25}ms)` : 'OFFLINE'}
                 </span>
               </div>
             </div>
