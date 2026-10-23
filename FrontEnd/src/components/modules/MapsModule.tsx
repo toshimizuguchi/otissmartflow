@@ -101,32 +101,35 @@ export const MapsModule: React.FC = () => {
   const coverageLayerRef = useRef<L.LayerGroup | null>(null);
 
   // Filter items by city & search
+  const qMap = (searchQuery || '').toLowerCase();
+  const cityFilterLower = (selectedCityFilter || 'TODAS').toLowerCase();
+
   const filteredTechs = technicians.filter(t => {
-    const matchesCity = selectedCityFilter === 'TODAS' || t.city.toLowerCase() === selectedCityFilter.toLowerCase();
-    const matchesQuery = !searchQuery || 
-      t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      t.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.assignedVehicle.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCity = selectedCityFilter === 'TODAS' || (t.city || '').toLowerCase() === cityFilterLower;
+    const matchesQuery = !qMap || 
+      (t.name || '').toLowerCase().includes(qMap) || 
+      (t.city || '').toLowerCase().includes(qMap) ||
+      (t.assignedVehicle || '').toLowerCase().includes(qMap);
     return matchesCity && matchesQuery;
   });
 
   const filteredEquipments = equipments.filter(e => {
-    const matchesCity = selectedCityFilter === 'TODAS' || e.city.toLowerCase() === selectedCityFilter.toLowerCase();
-    const matchesQuery = !searchQuery || 
-      e.tag.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.buildingName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCity = selectedCityFilter === 'TODAS' || (e.city || '').toLowerCase() === cityFilterLower;
+    const matchesQuery = !qMap || 
+      (e.tag || e.name || '').toLowerCase().includes(qMap) || 
+      (e.name || '').toLowerCase().includes(qMap) ||
+      (e.customerName || '').toLowerCase().includes(qMap) ||
+      (e.buildingName || '').toLowerCase().includes(qMap);
     return matchesCity && matchesQuery;
   });
 
   const filteredCalls = calls.filter(c => {
-    const matchesCity = selectedCityFilter === 'TODAS' || c.city.toLowerCase() === selectedCityFilter.toLowerCase();
-    const matchesQuery = !searchQuery ||
-      c.callNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.buildingName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.problemDescription.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCity = selectedCityFilter === 'TODAS' || (c.city || '').toLowerCase() === cityFilterLower;
+    const matchesQuery = !qMap ||
+      (c.callNumber || c.code || '').toLowerCase().includes(qMap) ||
+      (c.buildingName || '').toLowerCase().includes(qMap) ||
+      (c.customerName || c.clientName || '').toLowerCase().includes(qMap) ||
+      (c.problemDescription || c.description || '').toLowerCase().includes(qMap);
     return matchesCity && matchesQuery && (c.status === 'A_CAMINHO' || c.status === 'EM_ATENDIMENTO' || c.priority === 'CRITICO');
   });
 

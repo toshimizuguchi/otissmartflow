@@ -78,19 +78,19 @@ export const CallsModule: React.FC = () => {
       setActiveDetailCall(relevantCalls[0] || null);
     }
   }, [relevantCalls, activeDetailCall]);
-
   // Filter logic
   const filteredCalls = relevantCalls.filter(c => {
-    const matchesSearch = 
-      c.callNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.equipmentTag.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.problemDescription.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = (searchQuery || '').toLowerCase();
+    const matchesSearch = !q ||
+      (c.callNumber || c.code || '').toLowerCase().includes(q) ||
+      (c.customerName || c.clientName || '').toLowerCase().includes(q) ||
+      (c.equipmentTag || c.equipmentId || '').toLowerCase().includes(q) ||
+      (c.city || '').toLowerCase().includes(q) ||
+      (c.problemDescription || c.description || '').toLowerCase().includes(q);
 
     const matchesPriority = selectedPriority === 'TODAS' || c.priority === selectedPriority;
     const matchesStatus = selectedStatus === 'TODOS' || c.status === selectedStatus;
-    const matchesCity = selectedCityFilter === 'TODAS' || c.city.toLowerCase() === selectedCityFilter.toLowerCase();
+    const matchesCity = selectedCityFilter === 'TODAS' || (c.city || '').toLowerCase() === selectedCityFilter.toLowerCase();
 
     const matchesQuickFilter = 
       quickFilter === 'ALL' ? true :

@@ -49,7 +49,7 @@ export function getRealtimeTrafficCondition(
 ): TrafficCondition {
   const now = new Date();
   const hour = now.getHours();
-  const cityLower = city.toLowerCase();
+  const cityLower = (city || 'São Paulo').toLowerCase();
 
   // Peak hours: 07:30 - 09:30 and 17:00 - 19:30
   const isPeakHour = (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19);
@@ -180,11 +180,11 @@ export function checkTechnicianEquipmentFamiliarity(
   // 1. Check if technician is assigned for preventive maintenance
   const isPreventive = 
     equipment.preventiveTechnicianId === tech.id ||
-    equipment.preventiveTechnicianName?.toLowerCase() === tech.name.toLowerCase();
+    (equipment.preventiveTechnicianName || '').toLowerCase() === (tech.name || '').toLowerCase();
 
   // 2. Check historical failure interventions recorded in equipment
   const priorVisits = (equipment.historicalFailures || []).filter(
-    h => h.technicianName?.toLowerCase().includes(tech.name.toLowerCase().split(' ')[0])
+    h => (h.technicianName || '').toLowerCase().includes((tech.name || '').toLowerCase().split(' ')[0])
   ).length;
 
   const knowsEquipment = isPreventive || priorVisits > 0;
@@ -316,7 +316,7 @@ export function getAddressFixationSuggestion(
   const bestCandidate = technicians.find(t =>
     currentEquipmentsAtAddress.some(e => e.preventiveTechnicianId === t.id)
   ) || technicians.find(t => 
-    currentEquipmentsAtAddress.length > 0 && t.city.toLowerCase() === currentEquipmentsAtAddress[0].city.toLowerCase()
+    currentEquipmentsAtAddress.length > 0 && (t.city || '').toLowerCase() === (currentEquipmentsAtAddress[0].city || '').toLowerCase()
   ) || technicians[0];
 
   return {
