@@ -2,16 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Share, 
-  PlusSquare, 
+  Plus, 
   Smartphone, 
   Monitor, 
-  HelpCircle, 
+  Info, 
   CheckCircle2, 
   AlertTriangle, 
-  ExternalLink,
   Download,
-  Compass,
-  ArrowRight
+  Compass
 } from 'lucide-react';
 import { UsePwaInstallReturn } from '../../hooks/usePwaInstall';
 
@@ -117,7 +115,7 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({ pwa }) => {
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase bg-slate-800 text-slate-300 border border-slate-700">
-                <HelpCircle className="w-3.5 h-3.5" />
+                <Info className="w-3.5 h-3.5" />
                 APLICATIVO WEB
               </span>
             )}
@@ -225,7 +223,7 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({ pwa }) => {
                       </span>
                       <span className="flex items-center gap-1.5 flex-wrap">
                         Escolha <strong>“Adicionar à Tela de Início”</strong>
-                        <PlusSquare className="w-3.5 h-3.5 text-sky-400 inline" />.
+                        <Plus className="w-3.5 h-3.5 text-sky-400 inline" />.
                       </span>
                     </li>
                     <li className="flex items-start gap-2.5">

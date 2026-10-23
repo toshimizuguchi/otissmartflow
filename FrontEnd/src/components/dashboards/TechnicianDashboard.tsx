@@ -26,7 +26,6 @@ import {
   ArrowLeft,
   Calendar,
   Layers,
-  CheckSquare,
   FileText,
   Smartphone,
   Download

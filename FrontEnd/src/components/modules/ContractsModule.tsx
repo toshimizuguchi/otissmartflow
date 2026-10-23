@@ -7,7 +7,7 @@ export const ContractsModule: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const q = (searchQuery || '').toLowerCase();
-  const filteredContracts = contracts.filter(c => 
+  const filteredContracts = contracts.filter(c =>
     (c.customerName || (c as any).clientName || '').toLowerCase().includes(q) ||
     (c.contractNumber || (c as any).code || '').toLowerCase().includes(q)
   );
@@ -19,8 +19,8 @@ export const ContractsModule: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
             Contratos & Clientes
           </h1>
-           <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
-             DRE & Margens
+          <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
+            DRE & Margens
           </p>
         </div>
 
@@ -48,16 +48,15 @@ export const ContractsModule: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredContracts.map((contract) => (
           <div key={contract.id}
-           className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 transition-all space-y-4 shadow-sm">
+            className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 transition-all space-y-4 shadow-sm">
             <div className="flex items-start justify-between">
               <div>
                 <span className="text-xs font-mono font-bold text-cyan-400">{contract.contractNumber || (contract as any).code || 'CTR-OTIS'}</span>
                 <h3 className="text-sm font-bold text-slate-100">{contract.customerName || (contract as any).clientName || 'Cliente Corporativo'}</h3>
                 <span className="text-xs text-slate-400">{contract.equipmentsCount || 1} elevadores sob gestão • SLA {contract.slaRequiredRate || (contract as any).slaTargetMin || 98}%</span>
               </div>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${
-                contract.status === 'EM_RISCO' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-              }`}>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${contract.status === 'EM_RISCO' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                }`}>
                 {contract.status === 'EM_RISCO' ? 'Em Risco' : 'Saudável'}
               </span>
             </div>
