@@ -36,7 +36,7 @@ export function getApiBase(): string {
     return '/api/v1';
   }
 
-  return 'http://localhost:8080/api/v1';
+  return 'https://otissmartflow-1.onrender.com/api/v1';
 }
 
 /**
@@ -64,7 +64,7 @@ export function getReportsBase(): string {
     return '/reports';
   }
 
-  return 'http://localhost:8000';
+  return 'https://otissmartflow-1.onrender.com';
 }
 
 export function setCustomApiUrl(url: string) {

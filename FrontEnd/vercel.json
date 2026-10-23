@@ -5,6 +5,14 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/v1/(.*)",
+      "destination": "https://otissmartflow-1.onrender.com/api/v1/$1"
+    },
+    {
+      "source": "/reports/(.*)",
+      "destination": "https://otissmartflow-1.onrender.com/reports/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

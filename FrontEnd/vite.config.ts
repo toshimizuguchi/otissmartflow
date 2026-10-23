@@ -39,12 +39,12 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: 'https://otissmartflow-1.onrender.com',
           changeOrigin: true,
           secure: false,
         },
         '/reports': {
-          target: 'http://localhost:8000',
+          target: 'https://otissmartflow-1.onrender.com',
           changeOrigin: true,
           secure: false,
         },
