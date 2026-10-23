@@ -124,7 +124,7 @@ export const TechniciansModule: React.FC = () => {
             <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs space-y-1">
               <div className="flex items-center gap-1.5 text-slate-300">
                 <MapPin className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span className="truncate">{tech.currentLocation.address}</span>
+                <span className="truncate">{tech.currentLocation?.address || `${tech.city || 'São Paulo'} - Em Rota`}</span>
               </div>
               <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800">
                 <span>Frota: OTIS Mobile Tech</span>
@@ -136,7 +136,7 @@ export const TechniciansModule: React.FC = () => {
             <div>
               <div className="text-[10px] uppercase font-bold text-slate-400 mb-1.5 tracking-wider">Especialidades Técnicas</div>
               <div className="flex flex-wrap gap-1">
-                {tech.specialties.map((spec, i) => (
+                {(tech.specialties || []).map((spec, i) => (
                   <span key={i} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700 font-medium">
                     {spec}
                   </span>

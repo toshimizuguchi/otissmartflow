@@ -309,7 +309,7 @@ export const MapsModule: React.FC = () => {
 
         const marker = L.marker([eq.lat, eq.lng], { icon });
 
-        const normEqAddr = eq.address.toLowerCase().trim();
+        const normEqAddr = (eq.address || '').toLowerCase().trim();
         const fixedResident = fixedAddressTechnicians[normEqAddr];
 
         const popupContent = `
@@ -482,9 +482,9 @@ export const MapsModule: React.FC = () => {
               <span class="text-[10px] font-mono text-cyan-400 font-bold">${tech.status}</span>
             </div>
             <div class="text-[11px] text-slate-300 space-y-0.5">
-              <p class="text-slate-400 text-[10px]">${tech.currentLocation.address}</p>
-              <p class="text-slate-300 text-[10px]"><strong>Veículo:</strong> ${tech.assignedVehicle}</p>
-              <p class="text-slate-300 text-[10px]"><strong>Supervisor:</strong> ${tech.supervisorName}</p>
+              <p class="text-slate-400 text-[10px]">${tech.currentLocation?.address || `${tech.city || 'São Paulo'} - Em Campo`}</p>
+              <p class="text-slate-300 text-[10px]"><strong>Veículo:</strong> ${tech.assignedVehicle || 'OTIS Mobile Tech'}</p>
+              <p class="text-slate-300 text-[10px]"><strong>Supervisor:</strong> ${tech.supervisorName || 'Roberto Viana'}</p>
             </div>
             <div class="grid grid-cols-2 gap-1 bg-slate-950/80 p-1.5 rounded border border-slate-800 text-[10px]">
               <div>
@@ -904,12 +904,12 @@ export const MapsModule: React.FC = () => {
                 {/* Pin Type: EQUIPMENT */}
                 {selectedPin.type === 'EQUIPMENT' && (() => {
                   const eq = selectedPin.data;
-                  const normAddr = eq.address.toLowerCase().trim();
+                  const normAddr = (eq.address || '').toLowerCase().trim();
                   const fixedEntry = fixedAddressTechnicians[normAddr];
                   const suggestion = getAddressFixationSuggestion(
-                    eq.address, 
-                    eq.buildingName, 
-                    equipments.filter(e => e.address.toLowerCase().trim() === normAddr), 
+                    eq.address || 'Endereço', 
+                    eq.buildingName || 'Edifício', 
+                    equipments.filter(e => (e.address || '').toLowerCase().trim() === normAddr), 
                     technicians, 
                     fixedAddressTechnicians
                   );

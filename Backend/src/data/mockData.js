@@ -89,14 +89,25 @@ export const INITIAL_TECHNICIANS = [
     email: 'carlos.oliveira@otis.com',
     phone: '(11) 98765-4321',
     city: 'São Paulo',
+    state: 'SP',
     region: 'Zona Sul / Berrini',
     status: 'EM_ATENDIMENTO',
-    currentLatitude: -23.5985,
-    currentLongitude: -46.6872,
-    activeCallId: 'CAL-002',
+    currentLocation: {
+      lat: -23.5985,
+      lng: -46.6872,
+      address: 'Av. Eng. Luís Carlos Berrini, 105 - Itaim Bibi, São Paulo'
+    },
+    supervisorId: 'sup-1',
+    supervisorName: 'Roberto Viana',
+    assignedVehicle: 'Fiorino SmartFlow #14 (Placa BRA-4E29)',
+    completedCallsMonth: 38,
+    avgArrivalTimeMin: 19,
+    avgSolutionTimeMin: 34,
+    slaComplianceRate: 98.6,
+    activeCallId: 'CAL-001',
     completedToday: 2,
     rating: 4.9,
-    skills: ['GEN2', 'SKYRISE', 'DRIVE_REGEN']
+    specialties: ['Sistema de Portas', 'Otis Gen2 Comfort', 'Drives Regenerativos']
   },
   {
     id: 'TEC-002',
@@ -104,14 +115,25 @@ export const INITIAL_TECHNICIANS = [
     email: 'marcos.souza@otis.com',
     phone: '(11) 99876-5432',
     city: 'São Paulo',
+    state: 'SP',
     region: 'Paulista / Centro',
     status: 'DISPONIVEL',
-    currentLatitude: -23.5615,
-    currentLongitude: -46.6560,
+    currentLocation: {
+      lat: -23.5615,
+      lng: -46.6560,
+      address: 'Av. Paulista, 1578 - Bela Vista, São Paulo'
+    },
+    supervisorId: 'sup-1',
+    supervisorName: 'Roberto Viana',
+    assignedVehicle: 'Fiorino SmartFlow #18 (Placa OTIS-9K12)',
+    completedCallsMonth: 44,
+    avgArrivalTimeMin: 16,
+    avgSolutionTimeMin: 23,
+    slaComplianceRate: 99.2,
     activeCallId: null,
     completedToday: 3,
     rating: 4.8,
-    skills: ['GEN2', 'PORTAS_AUTOMATICAS', 'ELETRICA']
+    specialties: ['Sistema de Portas', 'Operadores AT120', 'Quadros MCS']
   },
   {
     id: 'TEC-003',
@@ -119,14 +141,25 @@ export const INITIAL_TECHNICIANS = [
     email: 'felipe.albuquerque@otis.com',
     phone: '(19) 97123-4567',
     city: 'Campinas',
+    state: 'SP',
     region: 'Campinas Central / RMC',
     status: 'DISPONIVEL',
-    currentLatitude: -22.9064,
-    currentLongitude: -47.0616,
+    currentLocation: {
+      lat: -22.9064,
+      lng: -47.0616,
+      address: 'Av. Iguatemi, 777 - Vila Brandina, Campinas'
+    },
+    supervisorId: 'sup-1',
+    supervisorName: 'Roberto Viana',
+    assignedVehicle: 'Strada SmartFlow #07 (Placa FLW-8T55)',
+    completedCallsMonth: 29,
+    avgArrivalTimeMin: 22,
+    avgSolutionTimeMin: 41,
+    slaComplianceRate: 97.4,
     activeCallId: null,
     completedToday: 4,
     rating: 4.95,
-    skills: ['GEN2', 'HYDRO', 'MODERNIZACAO']
+    specialties: ['Escadas Rolantes 510 NPE', 'Mecânica Pesada', 'Otis SkyRise']
   }
 ];
 

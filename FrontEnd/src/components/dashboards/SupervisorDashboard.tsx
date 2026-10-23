@@ -592,7 +592,7 @@ export const SupervisorDashboard: React.FC = () => {
                         <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                           <MapPin className="w-3 h-3 text-cyan-400 shrink-0" />
                           <span className="truncate max-w-[280px] sm:max-w-md">
-                            {selectedMapTech.currentLocation.address}
+                            {selectedMapTech.currentLocation?.address || `${selectedMapTech.city || 'São Paulo'} - Em Rota`}
                           </span>
                         </div>
                       </div>
@@ -679,10 +679,10 @@ export const SupervisorDashboard: React.FC = () => {
                       </div>
                       <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
                         <MapPin className="w-3 h-3 text-cyan-400 shrink-0" />
-                        <span className="truncate max-w-[220px]">{tech.currentLocation.address}</span>
+                        <span className="truncate max-w-[220px]">{tech.currentLocation?.address || `${tech.city || 'São Paulo'} - Em Campo`}</span>
                       </div>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {tech.specialties.map((spec, i) => (
+                        {(tech.specialties || []).map((spec, i) => (
                           <span key={i} className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">
                             {spec}
                           </span>
