@@ -2,8 +2,12 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { registerServiceWorker } from './utils/registerServiceWorker';
 import './index.css';
 import 'leaflet/dist/leaflet.css';
+
+// Register Service Worker for PWA
+registerServiceWorker();
 
 // Guard against third-party browser extension errors (e.g. MetaMask, Web3 wallet injection failures)
 if (typeof window !== 'undefined') {

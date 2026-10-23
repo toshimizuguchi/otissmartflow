@@ -27,8 +27,12 @@ import {
   Calendar,
   Layers,
   CheckSquare,
-  FileText
+  FileText,
+  Smartphone,
+  Download
 } from 'lucide-react';
+import { usePwaInstall } from '../../hooks/usePwaInstall';
+import { PwaInstallModal } from '../pwa/PwaInstallModal';
 
 interface ChecklistItem {
   id: string;
@@ -145,6 +149,7 @@ const INITIAL_EQUIPMENT_TASKS: EquipmentMaintenanceTask[] = [
 
 export const TechnicianDashboard: React.FC = () => {
   const { calls, equipments, updateCallStatus, addToast, setActiveView, addTechActivityLog, currentUser } = useApp();
+  const pwa = usePwaInstall();
   
   // Tab Filter in the Left Panel: ALL | MAINTENANCE | CALLS
   const [filterType, setFilterType] = useState<'ALL' | 'MAINTENANCE' | 'CALLS'>('ALL');
@@ -377,8 +382,36 @@ export const TechnicianDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Mini KPI Summary Strip (Horizontal & Compact) */}
-        <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-950 border border-slate-800/80 text-xs overflow-x-auto no-scrollbar">
+        {/* Right side of header: PWA Quick Action & KPIs */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* PWA Mobile Quick Action / Status Badge */}
+          {pwa.isInstalled ? (
+            <span 
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs font-semibold text-cyan-300 shadow-sm"
+              title="Aplicativo instalado em modo standalone"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
+              <span>App Instalado • Modo Campo</span>
+            </span>
+          ) : (
+            <button
+              onClick={pwa.openModal}
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-400 hover:to-sky-400 text-slate-950 text-xs font-bold flex items-center gap-2 shadow-md hover:shadow-cyan-500/20 active:scale-[0.98] transition-all"
+              title="Instalar aplicativo móvel (PWA) no celular ou tablet para GPS e modo offline"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-950" />
+              <span>Instalar App Móvel</span>
+              {pwa.platformInfo.isIos && (
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-950/20 text-slate-950 font-bold">iOS</span>
+              )}
+              {pwa.platformInfo.isAndroid && (
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-950/20 text-slate-950 font-bold">Android</span>
+              )}
+            </button>
+          )}
+
+          {/* Mini KPI Summary Strip (Horizontal & Compact) */}
+          <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-950 border border-slate-800/80 text-xs overflow-x-auto no-scrollbar">
           <button
             onClick={() => setFilterType('ALL')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
@@ -430,6 +463,39 @@ export const TechnicianDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Field Mobility & GPS PWA Banner (When not already installed) */}
+      {!pwa.isInstalled && (
+        <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-sky-950/60 via-slate-900/90 to-cyan-950/50 border border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0">
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-white tracking-tight">
+                  Aplicativo Móvel para Atendimentos em Campo
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-[10px] font-semibold text-sky-400 uppercase tracking-wider">
+                  {pwa.platformInfo.isIos ? 'iOS (iPhone / iPad)' : pwa.platformInfo.isAndroid ? 'Android' : 'PWA'}
+                </span>
+              </div>
+              <p className="text-[11.5px] text-slate-400">
+                Instale no seu smartphone para navegação GPS rápida, rotas de viatura e modo offline no local.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={pwa.openModal}
+              className="w-full sm:w-auto px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-950" />
+              <span>Instalar Aplicativo</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Tab Segmented Switcher (Visible only on mobile screens) */}
       <div className="lg:hidden flex rounded-xl bg-slate-950 border border-slate-800 p-1">
@@ -1356,6 +1422,9 @@ export const TechnicianDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Universal PWA Installation Modal (iOS Exclusive, Android, Desktop) */}
+      <PwaInstallModal pwa={pwa} />
 
     </div>
   );
