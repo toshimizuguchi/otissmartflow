@@ -119,8 +119,8 @@ export const EmployeesModule: React.FC = () => {
     return matchesSearch && matchesRole && matchesBonus && matchesOvertime;
   });
 
-  const formatCurrency = (val: number) => {
-    return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatCurrency = (val?: number | null) => {
+    return Number(val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
   // Open modal for Bonus action

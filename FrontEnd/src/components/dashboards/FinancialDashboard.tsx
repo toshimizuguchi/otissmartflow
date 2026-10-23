@@ -69,10 +69,10 @@ export const FinancialDashboard: React.FC = () => {
   ].filter(item => item.value > 0);
 
   const contractComparisonData = contracts.map(c => ({
-    name: c.customerName.split(' ')[0],
-    receita: Number(((c.monthlyRevenue || 0) / 1000).toFixed(1)),
-    custo: Number((((c.monthlyPartsCost || 0) + (c.monthlyTechLaborCost || 0) + (c.monthlyTravelCost || 0) + (c.monthlyOtherCost || 0)) / 1000).toFixed(1)),
-    margem: c.currentMarginRate || 0
+    name: (c.customerName || (c as any).clientName || c.contractNumber || 'Contrato').split(' ')[0],
+    receita: Number((((c.monthlyRevenue ?? (c as any).monthlyValue ?? 0)) / 1000).toFixed(1)),
+    custo: Number(((((c.monthlyPartsCost || 0) + (c.monthlyTechLaborCost || 0) + (c.monthlyTravelCost || 0) + (c.monthlyOtherCost || 0) + ((c as any).costAccumulated || 0)) / 1000)).toFixed(1)),
+    margem: c.currentMarginRate ?? (c as any).marginPercent ?? 0
   }));
 
   return (

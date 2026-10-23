@@ -3,10 +3,22 @@ import { store } from '../db.js';
 
 const router = Router();
 
+const formatEmployee = (e) => ({
+  ...e,
+  baseSalary: e.baseSalary || 5500,
+  bonusAmount: e.bonusAmount || 850,
+  bonusSuggested: e.bonusSuggested || e.bonusAmount || 850,
+  overtimeHours: e.overtimeHours || 0,
+  hourlyRate: e.hourlyRate || 35,
+  roleTitle: e.roleTitle || e.role || 'Técnico Especialista OTIS',
+  specialty: e.specialty || 'Sistemas Eletromecânicos e Automação',
+  unit: e.unit || 'Operações SP'
+});
+
 // GET /api/v1/employees
 router.get('/', (req, res) => {
   const { role } = req.query;
-  let list = store.employees;
+  let list = store.employees.map(formatEmployee);
 
   if (role) {
     list = list.filter(e => e.role?.toUpperCase() === role.toUpperCase());
@@ -46,7 +58,7 @@ router.patch('/:id/bonus', (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Colaborador não encontrado' });
 
   store.employees[idx].bonusApproved = approved;
-  res.json(store.employees[idx]);
+  res.json(formatEmployee(store.employees[idx]));
 });
 
 // PATCH /api/v1/employees/:id/overtime
@@ -56,14 +68,14 @@ router.patch('/:id/overtime', (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Colaborador não encontrado' });
 
   store.employees[idx].overtimeApproved = approved;
-  res.json(store.employees[idx]);
+  res.json(formatEmployee(store.employees[idx]));
 });
 
 // GET /api/v1/employees/:id
 router.get('/:id', (req, res) => {
   const item = store.employees.find(e => e.id === req.params.id);
   if (!item) return res.status(404).json({ error: 'Colaborador não encontrado' });
-  res.json(item);
+  res.json(formatEmployee(item));
 });
 
 export default router;

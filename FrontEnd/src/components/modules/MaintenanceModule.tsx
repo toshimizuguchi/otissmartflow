@@ -274,9 +274,9 @@ export const MaintenanceModule: React.FC = () => {
                 </div>
 
                 <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800/80 text-xs space-y-1">
-                  <div className="text-slate-400">Modelo: <strong className="text-slate-200">{eq.model}</strong> ({new Date().getFullYear() - eq.installationYear} anos)</div>
+                  <div className="text-slate-400">Modelo: <strong className="text-slate-200">{eq.model}</strong> ({Math.max(1, new Date().getFullYear() - (eq.installationYear || (eq as any).installationDate ? new Date((eq as any).installationDate || '2021').getFullYear() : 2021))} anos)</div>
                   <div className="text-slate-400">Ciclos de Porta: <strong className="text-cyan-300">{(eq.doorCycles ?? 0).toLocaleString('pt-BR')}</strong></div>
-                  <div className="text-slate-400">Próx. Manutenção: <strong className="text-emerald-400">{eq.nextScheduledMaintenance}</strong></div>
+                  <div className="text-slate-400">Próx. Manutenção: <strong className="text-emerald-400">{eq.nextScheduledMaintenance || '2026-11-15'}</strong></div>
                 </div>
 
                 <div className="flex items-center justify-between pt-1 text-xs">

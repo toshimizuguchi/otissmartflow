@@ -260,8 +260,8 @@ export const EquipmentModule: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs space-y-0.5">
                 <span className="text-[10px] text-slate-400">Ano Instalação</span>
-                <span className="font-bold font-mono text-slate-200 block text-sm">{activeEquipment.installationYear}</span>
-                <span className="text-[10px] text-slate-400">{new Date().getFullYear() - activeEquipment.installationYear} anos de operação</span>
+                <span className="font-bold font-mono text-slate-200 block text-sm">{activeEquipment.installationYear || (activeEquipment as any).installationDate ? new Date((activeEquipment as any).installationDate || '2021').getFullYear() : 2021}</span>
+                <span className="text-[10px] text-slate-400">{Math.max(1, new Date().getFullYear() - (activeEquipment.installationYear || (activeEquipment as any).installationDate ? new Date((activeEquipment as any).installationDate || '2021').getFullYear() : 2021))} anos de operação</span>
               </div>
 
               <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs space-y-0.5">

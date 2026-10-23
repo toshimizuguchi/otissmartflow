@@ -290,7 +290,7 @@ export const PartsModule: React.FC = () => {
                     <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-800/80">
                       <span className="text-slate-400 truncate">{part.category}</span>
                       <span className="font-mono font-bold text-white">
-                        R$ {part.unitCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R$ {Number(part.unitCost ?? (part as any).priceUnit ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
 
@@ -307,7 +307,7 @@ export const PartsModule: React.FC = () => {
                     <div className="pt-1">
                       <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Compatibilidade:</div>
                       <div className="flex flex-wrap gap-1">
-                        {part.compatibleModels.slice(0, 3).map((m, idx) => (
+                        {(part.compatibleModels || []).slice(0, 3).map((m, idx) => (
                           <span key={idx} className="px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800 text-[10px] truncate max-w-[clamp(150px,10vw,230px)]">
                             {m}
                           </span>

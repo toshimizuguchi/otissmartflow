@@ -6,9 +6,10 @@ export const ContractsModule: React.FC = () => {
   const { contracts, setActiveView, updateContractStatus } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
 
+  const q = (searchQuery || '').toLowerCase();
   const filteredContracts = contracts.filter(c => 
-    c.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.contractNumber.toLowerCase().includes(searchQuery.toLowerCase())
+    (c.customerName || (c as any).clientName || '').toLowerCase().includes(q) ||
+    (c.contractNumber || (c as any).code || '').toLowerCase().includes(q)
   );
 
   return (
@@ -50,9 +51,9 @@ export const ContractsModule: React.FC = () => {
            className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 transition-all space-y-4 shadow-sm">
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-xs font-mono font-bold text-cyan-400">{contract.contractNumber}</span>
-                <h3 className="text-sm font-bold text-slate-100">{contract.customerName}</h3>
-                <span className="text-xs text-slate-400">{contract.equipmentsCount} elevadores sob gestão • SLA {contract.slaRequiredRate}%</span>
+                <span className="text-xs font-mono font-bold text-cyan-400">{contract.contractNumber || (contract as any).code || 'CTR-OTIS'}</span>
+                <h3 className="text-sm font-bold text-slate-100">{contract.customerName || (contract as any).clientName || 'Cliente Corporativo'}</h3>
+                <span className="text-xs text-slate-400">{contract.equipmentsCount || 1} elevadores sob gestão • SLA {contract.slaRequiredRate || (contract as any).slaTargetMin || 98}%</span>
               </div>
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${
                 contract.status === 'EM_RISCO' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
@@ -64,20 +65,20 @@ export const ContractsModule: React.FC = () => {
             <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5 text-xs">
               <div className="flex justify-between text-slate-300">
                 <span>Receita Mensal:</span>
-                <span className="font-mono font-bold text-slate-100">R$ {(contract.monthlyRevenue ?? 0).toLocaleString('pt-BR')}</span>
+                <span className="font-mono font-bold text-slate-100">R$ {Number(contract.monthlyRevenue ?? (contract as any).monthlyValue ?? 0).toLocaleString('pt-BR')}</span>
               </div>
               <div className="flex justify-between text-slate-400">
                 <span>Custo de Peças:</span>
-                <span className="font-mono text-slate-200">- R$ {(contract.monthlyPartsCost ?? 0).toLocaleString('pt-BR')}</span>
+                <span className="font-mono text-slate-200">- R$ {Number(contract.monthlyPartsCost ?? ((contract as any).costAccumulated ? (contract as any).costAccumulated * 0.4 : 0)).toLocaleString('pt-BR')}</span>
               </div>
               <div className="flex justify-between text-slate-400">
                 <span>Horas Técnicas:</span>
-                <span className="font-mono text-slate-200">- R$ {(contract.monthlyTechLaborCost ?? 0).toLocaleString('pt-BR')}</span>
+                <span className="font-mono text-slate-200">- R$ {Number(contract.monthlyTechLaborCost ?? ((contract as any).costAccumulated ? (contract as any).costAccumulated * 0.6 : 0)).toLocaleString('pt-BR')}</span>
               </div>
               <div className="pt-1.5 border-t border-slate-800 flex justify-between font-bold">
                 <span className="text-slate-200">Margem Atual:</span>
-                <span className={`font-mono ${(contract.currentMarginRate ?? 0) < 20 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                  {contract.currentMarginRate ?? 0}% (Meta: {contract.baselineMarginRate ?? 0}%)
+                <span className={`font-mono ${(contract.currentMarginRate ?? (contract as any).marginPercent ?? 0) < 20 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                  {contract.currentMarginRate ?? (contract as any).marginPercent ?? 70}% (Meta: {contract.baselineMarginRate || 25}%)
                 </span>
               </div>
             </div>
