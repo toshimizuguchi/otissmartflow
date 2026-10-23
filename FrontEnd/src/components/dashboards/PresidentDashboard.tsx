@@ -233,7 +233,6 @@ export const PresidentDashboard: React.FC = () => {
           change={riskEquipments > 0 ? 'Monitoramento ativo' : 'Operação estável'}
           isPositive={riskEquipments === 0}
           icon={<AlertTriangle style={{ width: 18, height: 18 }} />}
-          badge={riskEquipments > 0 ? "Atenção" : undefined}
           onClick={() => setActiveView('maintenance')}
         />
         <MetricCard
