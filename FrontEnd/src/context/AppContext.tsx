@@ -492,8 +492,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         if (apiCalls && apiCalls.length > 0) {
           setCalls(prev => {
-            const apiIds = new Set(apiCalls.map(c => c.id));
-            return [...apiCalls, ...prev.filter(c => !apiIds.has(c.id))];
+            const apiCallsWithDefaults = apiCalls.map(c => ({
+              ...c,
+              timeline: Array.isArray(c.timeline) && c.timeline.length > 0 ? c.timeline : [
+                {
+                  step: 'Chamado Aberto',
+                  timestamp: new Date(c.createdAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                  description: c.problemDescription || 'Abertura de chamado de serviço'
+                }
+              ]
+            }));
+            const apiIds = new Set(apiCallsWithDefaults.map(c => c.id));
+            return [...apiCallsWithDefaults, ...prev.filter(c => !apiIds.has(c.id))];
           });
         }
         if (apiContracts && apiContracts.length > 0) {
@@ -1025,7 +1035,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
 
         const updatedTimeline = [
-          ...c.timeline,
+          ...(c.timeline || []),
           {
             step: stepLabels[status],
             timestamp: nowTime,
@@ -1125,7 +1135,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               }
             : c.supervisorOverride,
           timeline: [
-            ...c.timeline,
+            ...(c.timeline || []),
             {
               step: 'Técnico Reatribuído',
               timestamp: nowTime,

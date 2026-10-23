@@ -30,13 +30,14 @@ export const TechHistoryModule: React.FC = () => {
   const [selectedDateFilter, setSelectedDateFilter] = useState<string>('ALL');
 
   // Filter logs
-  const filteredLogs = techActivityLogs.filter((log) => {
-    const matchesSearch = 
-      log.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (log.callNumber && log.callNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (log.equipmentTag && log.equipmentTag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (log.technicianName && log.technicianName.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredLogs = (techActivityLogs || []).filter((log) => {
+    const q = (searchTerm || '').toLowerCase();
+    const matchesSearch = !q ||
+      (log.title || '').toLowerCase().includes(q) ||
+      (log.description || '').toLowerCase().includes(q) ||
+      (log.callNumber && log.callNumber.toLowerCase().includes(q)) ||
+      (log.equipmentTag && log.equipmentTag.toLowerCase().includes(q)) ||
+      (log.technicianName && log.technicianName.toLowerCase().includes(q));
 
     const matchesType = 
       selectedType === 'ALL' ||
@@ -48,7 +49,7 @@ export const TechHistoryModule: React.FC = () => {
 
     const matchesDate = 
       selectedDateFilter === 'ALL' ||
-      (selectedDateFilter === 'TODAY' && log.date?.includes('Hoje'));
+      (selectedDateFilter === 'TODAY' && (log.date || '').includes('Hoje'));
 
     return matchesSearch && matchesType && matchesDate;
   });

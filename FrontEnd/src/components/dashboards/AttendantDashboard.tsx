@@ -30,20 +30,21 @@ export const AttendantDashboard: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<'ALL' | 'OPEN' | 'IN_SERVICE' | 'CRITICAL' | 'COMPLETED'>('ALL');
 
   // Stats calculation
-  const totalCallsCount = calls.length;
-  const openCallsCount = calls.filter(c => c.status === 'CRIADO' || c.status === 'ACEITO' || c.status === 'A_CAMINHO').length;
-  const inServiceCallsCount = calls.filter(c => c.status === 'EM_ATENDIMENTO').length;
-  const criticalCallsCount = calls.filter(c => c.priority === 'CRITICO' || c.hasTrappedPassenger || (c.severityLevel ?? 0) >= 4).length;
-  const completedCallsCount = calls.filter(c => c.status === 'CONCLUIDO').length;
+  const totalCallsCount = (calls || []).length;
+  const openCallsCount = (calls || []).filter(c => c.status === 'CRIADO' || c.status === 'ACEITO' || c.status === 'A_CAMINHO').length;
+  const inServiceCallsCount = (calls || []).filter(c => c.status === 'EM_ATENDIMENTO').length;
+  const criticalCallsCount = (calls || []).filter(c => c.priority === 'CRITICO' || c.hasTrappedPassenger || (c.severityLevel ?? 0) >= 4).length;
+  const completedCallsCount = (calls || []).filter(c => c.status === 'CONCLUIDO').length;
 
-  const filteredCalls = calls.filter(c => {
-    const matchesSearch = 
-      c.callNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.equipmentTag.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (c.address && c.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (c.technicianName && c.technicianName.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredCalls = (calls || []).filter(c => {
+    const q = (searchQuery || '').toLowerCase();
+    const matchesSearch = !q ||
+      (c.callNumber || c.code || '').toLowerCase().includes(q) ||
+      (c.customerName || c.clientName || '').toLowerCase().includes(q) ||
+      (c.equipmentTag || '').toLowerCase().includes(q) ||
+      (c.city || '').toLowerCase().includes(q) ||
+      ((c.address || '').toLowerCase().includes(q)) ||
+      ((c.technicianName || '').toLowerCase().includes(q));
 
     const matchesTab = 
       selectedTab === 'ALL' ? true :
@@ -254,7 +255,7 @@ export const AttendantDashboard: React.FC = () => {
               <p className="text-xs">Nenhum chamado encontrado para os filtros selecionados.</p>
             </div>
           ) : (
-            filteredCalls.map((call) => (
+            (filteredCalls || []).map((call) => (
               <div
                 key={call.id}
                 onClick={() => {
@@ -309,7 +310,7 @@ export const AttendantDashboard: React.FC = () => {
                     <Users className="w-3.5 h-3.5 text-cyan-400" />
                     <span>
                       Técnico: <strong className="text-cyan-300">{call.technicianName || 'Em triagem'}</strong>
-                      {call.assignedTechnicians && call.assignedTechnicians.length > 1 && (
+                      {Array.isArray(call.assignedTechnicians) && call.assignedTechnicians.length > 1 && (
                         <span className="text-[10px] text-amber-300 font-mono ml-1">
                           (+{call.assignedTechnicians.length - 1} apoio)
                         </span>

@@ -13,7 +13,14 @@ const formatCall = (c) => ({
   buildingName: c.buildingName || c.address || 'Edifício Corporativo',
   city: c.city || 'São Paulo',
   priority: c.priority || 'NORMAL',
-  status: c.status || 'ABERTO'
+  status: c.status || 'ABERTO',
+  timeline: Array.isArray(c.timeline) && c.timeline.length > 0 ? c.timeline : [
+    {
+      step: 'Chamado Aberto',
+      timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      description: c.problemDescription || c.description || 'Atendimento técnico registrado no sistema'
+    }
+  ]
 });
 
 // GET /api/v1/calls

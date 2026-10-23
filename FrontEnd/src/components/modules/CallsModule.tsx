@@ -598,7 +598,7 @@ export const CallsModule: React.FC = () => {
                 Histórico de Atendimento
               </span>
               <div className="space-y-2 pl-2 border-l-2 border-slate-800">
-                {activeDetailCall.timeline.map((event, idx) => (
+                {(activeDetailCall.timeline || []).map((event, idx) => (
                   <div key={idx} className="relative pl-3 space-y-0.5">
                     <div className="absolute -left-[17px] top-1 w-2 h-2 rounded-full bg-cyan-400" />
                     <div className="flex items-center gap-2">

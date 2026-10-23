@@ -183,22 +183,22 @@ export const TechnicianDashboard: React.FC = () => {
   const [usedPartInput, setUsedPartInput] = useState('');
 
   // Technician Corrective Calls (Campinas region / João Pedro)
-  const techCalls = calls.filter(c => c.technicianName?.includes('João Pedro') || c.city === 'Campinas');
+  const techCalls = (calls || []).filter(c => (c.technicianName || '').toLowerCase().includes('joão pedro') || c.city === 'Campinas');
   
-  const activeCall = techCalls.find(c => c.id === selectedCallId) || techCalls[0];
-  const activeMaint = maintTasks.find(m => m.id === selectedMaintId) || maintTasks[0];
+  const activeCall = (techCalls || []).find(c => c.id === selectedCallId) || (techCalls || [])[0];
+  const activeMaint = (maintTasks || []).find(m => m.id === selectedMaintId) || (maintTasks || [])[0];
   
-  const relatedEquipment = equipments.find(e => 
+  const relatedEquipment = (equipments || []).find(e => 
     e.id === (selectedItemType === 'CALL' ? activeCall?.equipmentId : activeMaint?.equipmentId)
-  ) || equipments[0];
+  ) || (equipments || [])[0];
 
   // Counts for Top Compact KPI Bar
-  const totalTasksCount = techCalls.length + maintTasks.length;
-  const inProgressCount = techCalls.filter(c => c.status === 'EM_ATENDIMENTO' || c.status === 'A_CAMINHO').length +
-                          maintTasks.filter(m => m.status === 'EM_ANDAMENTO').length;
-  const criticalCallsCount = techCalls.filter(c => c.priority === 'CRITICO').length;
-  const completedCount = techCalls.filter(c => c.status === 'CONCLUIDO').length +
-                         maintTasks.filter(m => m.status === 'CONCLUIDA').length;
+  const totalTasksCount = (techCalls || []).length + (maintTasks || []).length;
+  const inProgressCount = (techCalls || []).filter(c => c.status === 'EM_ATENDIMENTO' || c.status === 'A_CAMINHO').length +
+                          (maintTasks || []).filter(m => m.status === 'EM_ANDAMENTO').length;
+  const criticalCallsCount = (techCalls || []).filter(c => c.priority === 'CRITICO').length;
+  const completedCount = (techCalls || []).filter(c => c.status === 'CONCLUIDO').length +
+                         (maintTasks || []).filter(m => m.status === 'CONCLUIDA').length;
 
   const handleCallAction = (newStatus: any, note: string) => {
     if (!activeCall) return;
@@ -228,18 +228,18 @@ export const TechnicianDashboard: React.FC = () => {
   const handleSetChecklistStatus = (taskId: string, checkId: string, status: 'OK' | 'PROBLEMA' | 'PENDENTE') => {
     if (status === 'PROBLEMA') {
       const task = maintTasks.find(t => t.id === taskId);
-      const item = task?.checklist.find(c => c.id === checkId);
+      const item = task?.checklist?.find(c => c.id === checkId);
       setEditingProblemCheckId(checkId);
       setActiveProblemType(item?.problemType || 'QUEBROU');
       setActiveProblemNote(item?.problemNotes || '');
       return;
     }
 
-    setMaintTasks(prev => prev.map(task => {
+    setMaintTasks(prev => (prev || []).map(task => {
       if (task.id !== taskId) return task;
       return {
         ...task,
-        checklist: task.checklist.map(item => {
+        checklist: (task.checklist || []).map(item => {
           if (item.id === checkId) {
             const nextDone = status === 'OK';
             return {
@@ -262,14 +262,14 @@ export const TechnicianDashboard: React.FC = () => {
 
   const handleSaveChecklistProblem = (taskId: string, checkId: string) => {
     const task = maintTasks.find(t => t.id === taskId);
-    const item = task?.checklist.find(c => c.id === checkId);
+    const item = task?.checklist?.find(c => c.id === checkId);
     if (!item) return;
 
-    setMaintTasks(prev => prev.map(t => {
+    setMaintTasks(prev => (prev || []).map(t => {
       if (t.id !== taskId) return t;
       return {
         ...t,
-        checklist: t.checklist.map(c => {
+        checklist: (t.checklist || []).map(c => {
           if (c.id === checkId) {
             return {
               ...c,
@@ -289,12 +289,12 @@ export const TechnicianDashboard: React.FC = () => {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       date: `Hoje, ${new Date().toLocaleDateString('pt-BR')}`,
       title: `Problema Detectado: ${activeProblemType === 'QUEBROU' ? 'Quebrou / Trincado' : activeProblemType === 'NECESSITA_PECA' ? 'Necessita de Peça' : 'Desgaste / Falha'}`,
-      description: `Item "${item.text}" no equipamento ${activeMaint.equipmentTag} (${activeMaint.buildingName}). Observação: ${activeProblemNote || 'Necessária intervenção técnica'}.`,
-      callNumber: activeMaint.taskNumber,
-      equipmentTag: activeMaint.equipmentTag,
+      description: `Item "${item.text}" no equipamento ${activeMaint?.equipmentTag || ''} (${activeMaint?.buildingName || ''}). Observação: ${activeProblemNote || 'Necessária intervenção técnica'}.`,
+      callNumber: activeMaint?.taskNumber || '',
+      equipmentTag: activeMaint?.equipmentTag || '',
       technicianName: currentUser.name,
       metadata: {
-        taskNumber: activeMaint.taskNumber,
+        taskNumber: activeMaint?.taskNumber || '',
         itemText: item.text,
         problemType: activeProblemType
       }
@@ -308,12 +308,12 @@ export const TechnicianDashboard: React.FC = () => {
     const task = maintTasks.find(t => t.id === maintId);
     if (!task) return;
 
-    setMaintTasks(prev => prev.map(t => {
+    setMaintTasks(prev => (prev || []).map(t => {
       if (t.id === maintId) {
         return {
           ...t,
           status: 'CONCLUIDA',
-          checklist: t.checklist.map(c => ({ ...c, done: true, status: c.status === 'PROBLEMA' ? 'PROBLEMA' : 'OK' }))
+          checklist: (t.checklist || []).map(c => ({ ...c, done: true, status: c.status === 'PROBLEMA' ? 'PROBLEMA' : 'OK' }))
         };
       }
       return t;
@@ -480,8 +480,9 @@ export const TechnicianDashboard: React.FC = () => {
             
             {/* MANUTENÇÃO PREVENTIVA / PREDITIVA */}
             {(filterType === 'ALL' || filterType === 'MAINTENANCE') && (
-              maintTasks.map((task) => {
-                const completedChecks = task.checklist.filter(c => c.done || c.status === 'OK').length;
+              (maintTasks || []).map((task) => {
+                const taskChecklist = task.checklist || [];
+                const completedChecks = taskChecklist.filter(c => c.done || c.status === 'OK').length;
                 const isSelected = selectedItemType === 'MAINTENANCE' && selectedMaintId === task.id;
 
                 return (
@@ -522,7 +523,7 @@ export const TechnicianDashboard: React.FC = () => {
                     <div className="flex items-center justify-between text-[11px] text-slate-400 pl-1.5 pt-1 border-t border-slate-800/60">
                       <span className="truncate">{task.buildingName} • {task.equipmentTag}</span>
                       <span className="font-mono text-slate-300 text-[10px] shrink-0">
-                        {completedChecks}/{task.checklist.length} itens OK
+                        {completedChecks}/{taskChecklist.length} itens OK
                       </span>
                     </div>
                   </div>
@@ -532,7 +533,7 @@ export const TechnicianDashboard: React.FC = () => {
 
             {/* CHAMADOS CORRETIVOS / CLIENTES */}
             {(filterType === 'ALL' || filterType === 'CALLS') && (
-              techCalls.map((call) => {
+              (techCalls || []).map((call) => {
                 const isSelected = selectedItemType === 'CALL' && selectedCallId === call.id;
                 const isCritical = call.priority === 'CRITICO';
 
@@ -1103,13 +1104,13 @@ export const TechnicianDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                     <ClipboardCheck className="w-4 h-4 text-cyan-400" />
-                    Procedimentos de Manutenção ({activeMaint.checklist.filter(c => c.status === 'OK' || c.done).length}/{activeMaint.checklist.length} validados)
+                    Procedimentos de Manutenção ({((activeMaint?.checklist) || []).filter(c => c.status === 'OK' || c.done).length}/{((activeMaint?.checklist) || []).length} validados)
                   </span>
                   <span className="text-[11px] text-slate-400">Clique para marcar OK ou relatar defeito</span>
                 </div>
 
                 <div className="space-y-2">
-                  {activeMaint.checklist.map((item) => {
+                  {((activeMaint?.checklist) || []).map((item) => {
                     const isOk = item.status === 'OK' || item.done;
                     const isProblem = item.status === 'PROBLEMA';
                     const isEditingThis = editingProblemCheckId === item.id;
@@ -1239,7 +1240,7 @@ export const TechnicianDashboard: React.FC = () => {
                     Ferramentas Indicadas
                   </span>
                   <ul className="text-slate-300 pl-4 list-disc space-y-0.5 text-xs">
-                    {activeMaint.recommendedTools.map((t, idx) => (
+                    {(activeMaint?.recommendedTools || []).map((t, idx) => (
                       <li key={idx}>{t}</li>
                     ))}
                   </ul>
@@ -1250,7 +1251,7 @@ export const TechnicianDashboard: React.FC = () => {
                     Peças Previstas
                   </span>
                   <div className="flex flex-wrap gap-1.5">
-                    {activeMaint.recommendedParts.map((p, idx) => (
+                    {(activeMaint?.recommendedParts || []).map((p, idx) => (
                       <span key={idx} className="px-2 py-0.5 rounded bg-slate-900 text-slate-200 border border-slate-800 text-xs">
                         {p}
                       </span>
