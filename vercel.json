@@ -1,7 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "buildCommand": "cd FrontEnd && npm install --legacy-peer-deps && npm run build",
+  "installCommand": "if [ -d \"FrontEnd\" ]; then cd FrontEnd; fi && npm install --legacy-peer-deps",
+  "buildCommand": "if [ -d \"FrontEnd\" ]; then cd FrontEnd; fi && npm run build",
   "outputDirectory": "FrontEnd/dist",
   "rewrites": [
     {
