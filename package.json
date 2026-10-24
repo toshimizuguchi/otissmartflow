@@ -9,6 +9,9 @@
   "scripts": {
     "dev": "npm --prefix FrontEnd run dev",
     "build": "npm --prefix FrontEnd run build",
-    "preview": "npm --prefix FrontEnd run preview"
+    "preview": "npm --prefix FrontEnd run preview",
+    "backend:dev": "npm --prefix Backend run dev",
+    "backend:start": "npm --prefix Backend run start",
+    "generate-docs": "npm --prefix Backend run generate-docs"
   }
 }
