@@ -28,7 +28,14 @@ export const pool = new Pool({
   },
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000
+  connectionTimeoutMillis: 10000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000
+});
+
+// Tratamento fundamental: previne que desconexões de clientes ociosos pelo Supabase/PgBouncer derrubem o processo Node.js
+pool.on('error', (err) => {
+  console.warn('⚠️ [Supabase PostgreSQL] Conexão ociosa redefinida pelo pooler/banco:', err.message);
 });
 
 // Cache em memória para resposta instantânea e fallback seguro
@@ -98,11 +105,15 @@ export async function initDatabase() {
 // Carrega os chamados persistidos no Supabase para o cache em memória.
 // O banco é a fonte da verdade: registros do banco sobrescrevem os dados de exemplo com o mesmo id.
 export async function loadCallsFromDatabase() {
-  const { rows } = await pool.query('SELECT data FROM calls WHERE data IS NOT NULL ORDER BY created_at DESC');
-  const dbCalls = rows.map(r => r.data).filter(c => c && c.id);
-  const dbIds = new Set(dbCalls.map(c => c.id));
-  store.calls = [...dbCalls, ...store.calls.filter(c => !dbIds.has(c.id))];
-  console.log(`✅ [Supabase PostgreSQL] ${dbCalls.length} chamado(s) carregado(s) do banco.`);
+  try {
+    const { rows } = await pool.query('SELECT data FROM calls WHERE data IS NOT NULL ORDER BY created_at DESC');
+    const dbCalls = rows.map(r => r.data).filter(c => c && c.id);
+    const dbIds = new Set(dbCalls.map(c => c.id));
+    store.calls = [...dbCalls, ...store.calls.filter(c => !dbIds.has(c.id))];
+    console.log(`✅ [Supabase PostgreSQL] ${dbCalls.length} chamado(s) carregado(s) do banco.`);
+  } catch (err) {
+    console.warn('⚠️ [Supabase PostgreSQL] Não foi possível carregar chamados do banco (usando memória):', err.message);
+  }
 }
 
 // Persiste (insert/update) um chamado completo no Supabase.

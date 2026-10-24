@@ -48,7 +48,20 @@ app.get('/', (req, res) => {
   });
 });
 
+// Previne quedas do processo por exceções assíncronas não tratadas
+process.on('uncaughtException', (err) => {
+  console.error('⚠️ [OTIS SmartFlow] Uncaught Exception capturada:', err.message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('⚠️ [OTIS SmartFlow] Unhandled Rejection capturada:', reason);
+});
+
 app.get('/health', (req, res) => {
+  res.json({ status: 'UP', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
@@ -72,5 +85,19 @@ app.use('/reports', reportsRoutes);
 initDatabase().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 [OTIS SmartFlow] API Node.js rodando com sucesso na porta ${PORT}`);
+
+    // Keep-Alive inteligente: evita suspensão do Render Free Tier (inativo após 15min)
+    const KEEP_ALIVE_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL || 'https://otissmartflow-1.onrender.com';
+    const PING_INTERVAL = 9 * 60 * 1000; // a cada 9 minutos
+    setInterval(async () => {
+      try {
+        const res = await fetch(`${KEEP_ALIVE_URL}/health`);
+        if (res.ok) {
+          console.log(`⏱️ [Keep-Alive] Ping preventivo executado com sucesso (${new Date().toLocaleTimeString('pt-BR')})`);
+        }
+      } catch (err) {
+        console.debug('⚠️ [Keep-Alive] Ping preventivo temporariamente inacessível:', err.message);
+      }
+    }, PING_INTERVAL);
   });
 });

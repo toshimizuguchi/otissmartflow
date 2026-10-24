@@ -98,7 +98,7 @@ export function resetBackendUrls() {
 export const API_BASE = getApiBase();
 export const REPORTS_BASE = getReportsBase();
 
-async function safeFetch<T>(endpoint: string, options: RequestInit = {}, fallbackData?: T, timeoutMs = 4500): Promise<T> {
+async function safeFetch<T>(endpoint: string, options: RequestInit = {}, fallbackData?: T, timeoutMs = 12000): Promise<T> {
   const base = getApiBase();
   const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint}`;
 
@@ -473,16 +473,20 @@ export const apiService = {
 
       try {
         const t0 = performance.now();
-        const res = await fetch(`${baseApi}/dashboard/metrics`, { method: 'GET', signal: AbortSignal.timeout(3000) });
+        // Tenta primeiro /health (mais leve e rápido); se falhar, tenta /dashboard/metrics
+        let res = await fetch(`${baseApi}/health`, { method: 'GET', signal: AbortSignal.timeout(8000) }).catch(() => null);
+        if (!res || !res.ok) {
+          res = await fetch(`${baseApi}/dashboard/metrics`, { method: 'GET', signal: AbortSignal.timeout(8000) }).catch(() => null);
+        }
         apiLatencyMs = Math.round(performance.now() - t0);
-        apiOnline = res.ok;
+        apiOnline = !!(res && res.ok);
       } catch {
         apiOnline = false;
       }
 
       try {
         const t0 = performance.now();
-        const res = await fetch(`${baseReports}/health`, { method: 'GET', signal: AbortSignal.timeout(3000) });
+        const res = await fetch(`${baseReports}/health`, { method: 'GET', signal: AbortSignal.timeout(8000) });
         reportsLatencyMs = Math.round(performance.now() - t0);
         reportsOnline = res.ok;
       } catch {
@@ -511,14 +515,17 @@ export const apiService = {
 
       try {
         const t0 = performance.now();
-        const res = await fetch(`${targetApi}/dashboard/metrics`, { signal: AbortSignal.timeout(3500) });
+        let res = await fetch(`${targetApi}/health`, { signal: AbortSignal.timeout(8000) }).catch(() => null);
+        if (!res || !res.ok) {
+          res = await fetch(`${targetApi}/dashboard/metrics`, { signal: AbortSignal.timeout(8000) }).catch(() => null);
+        }
         apiLatency = Math.round(performance.now() - t0);
-        if (res.ok) apiStatus = 'ONLINE';
+        if (res && res.ok) apiStatus = 'ONLINE';
       } catch {}
 
       try {
         const t0 = performance.now();
-        const res = await fetch(`${targetReports}/health`, { signal: AbortSignal.timeout(3500) });
+        const res = await fetch(`${targetReports}/health`, { signal: AbortSignal.timeout(8000) });
         reportsLatency = Math.round(performance.now() - t0);
         if (res.ok) reportsStatus = 'ONLINE';
       } catch {}
