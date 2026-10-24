@@ -98,13 +98,13 @@ export function resetBackendUrls() {
 export const API_BASE = getApiBase();
 export const REPORTS_BASE = getReportsBase();
 
-async function safeFetch<T>(endpoint: string, options: RequestInit = {}, fallbackData?: T): Promise<T> {
+async function safeFetch<T>(endpoint: string, options: RequestInit = {}, fallbackData?: T, timeoutMs = 4500): Promise<T> {
   const base = getApiBase();
   const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint}`;
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4500);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     const res = await fetch(url, {
       ...options,
@@ -200,6 +200,14 @@ export const apiService = {
         method: 'POST',
         body: JSON.stringify(call)
       }, call as Call);
+    },
+    // Sincronização completa do chamado (lança erro em caso de falha para permitir reenvio).
+    // Timeout maior para tolerar o "cold start" do Render.
+    upsert: async (call: Call): Promise<Call> => {
+      return safeFetch<Call>(`/calls/${encodeURIComponent(call.id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(call)
+      }, undefined, 25000);
     },
     updateStatus: async (id: string, status: string): Promise<Call | null> => {
       return safeFetch<Call | null>(`/calls/${id}/status?status=${encodeURIComponent(status)}`, {

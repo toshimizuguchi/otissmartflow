@@ -88,7 +88,53 @@ export async function initDatabase() {
 
     client.release();
     console.log('✅ [Supabase PostgreSQL] Tabelas verificadas/criadas no Supabase.');
+
+    await loadCallsFromDatabase();
   } catch (err) {
     console.warn('⚠️ [Supabase PostgreSQL] Aviso de conexão:', err.message);
+  }
+}
+
+// Carrega os chamados persistidos no Supabase para o cache em memória.
+// O banco é a fonte da verdade: registros do banco sobrescrevem os dados de exemplo com o mesmo id.
+export async function loadCallsFromDatabase() {
+  const { rows } = await pool.query('SELECT data FROM calls WHERE data IS NOT NULL ORDER BY created_at DESC');
+  const dbCalls = rows.map(r => r.data).filter(c => c && c.id);
+  const dbIds = new Set(dbCalls.map(c => c.id));
+  store.calls = [...dbCalls, ...store.calls.filter(c => !dbIds.has(c.id))];
+  console.log(`✅ [Supabase PostgreSQL] ${dbCalls.length} chamado(s) carregado(s) do banco.`);
+}
+
+// Persiste (insert/update) um chamado completo no Supabase.
+export async function persistCall(call) {
+  try {
+    await pool.query(
+      `INSERT INTO calls (id, code, equipment_id, client_name, status, priority, technician_id, technician_name, data)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (id) DO UPDATE SET
+         code = EXCLUDED.code,
+         equipment_id = EXCLUDED.equipment_id,
+         client_name = EXCLUDED.client_name,
+         status = EXCLUDED.status,
+         priority = EXCLUDED.priority,
+         technician_id = EXCLUDED.technician_id,
+         technician_name = EXCLUDED.technician_name,
+         data = EXCLUDED.data`,
+      [
+        call.id,
+        call.callNumber || call.code || call.id,
+        call.equipmentId || '',
+        call.customerName || '',
+        call.status || '',
+        call.priority || '',
+        call.technicianId || '',
+        call.technicianName || '',
+        call
+      ]
+    );
+    return true;
+  } catch (err) {
+    console.warn(`⚠️ [Supabase PostgreSQL] Falha ao persistir chamado ${call.id}:`, err.message);
+    return false;
   }
 }

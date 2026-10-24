@@ -155,6 +155,7 @@ export interface Call {
   id: string;
   callNumber: string;
   createdAt: string;
+  updatedAt?: string; // última alteração (usado na sincronização entre dispositivos)
   openedById?: string; // usuário que abriu o chamado
   openedByName?: string;
   origin: CallOrigin;

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { store, pool } from '../db.js';
+import { store, persistCall } from '../db.js';
 
 const router = Router();
 
@@ -22,6 +22,22 @@ const formatCall = (c) => ({
     }
   ]
 });
+
+// Insere ou substitui um chamado no cache em memória
+const upsertInStore = (call) => {
+  const idx = store.calls.findIndex(c => c.id === call.id);
+  if (idx === -1) {
+    store.calls.unshift(call);
+  } else {
+    store.calls[idx] = call;
+  }
+  return call;
+};
+
+const toMillis = (v) => {
+  const t = v ? new Date(v).getTime() : NaN;
+  return Number.isNaN(t) ? 0 : t;
+};
 
 // GET /api/v1/calls
 router.get('/', (req, res) => {
@@ -58,41 +74,66 @@ router.post('/', async (req, res) => {
       ...req.body
     };
 
-    const newCall = formatCall(rawCall);
-    store.calls.unshift(newCall);
+    const existing = store.calls.find(c => c.id === rawCall.id);
+    const newCall = formatCall(existing ? { ...existing, ...req.body } : rawCall);
+    upsertInStore(newCall);
 
-    // Persistência assíncrona no Supabase
-    pool.query(
-      'INSERT INTO calls (id, code, equipment_id, client_name, status, priority, technician_id, technician_name, data) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO UPDATE SET data = $9',
-      [newCall.id, newCall.callNumber, newCall.equipmentId || '', newCall.customerName, newCall.status, newCall.priority, newCall.technicianId || '', newCall.technicianName || '', newCall]
-    ).catch(() => {});
+    // Persistência no Supabase
+    await persistCall(newCall);
 
-    res.status(201).json(newCall);
+    res.status(existing ? 200 : 201).json(newCall);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/v1/calls/:id — sincronização completa do chamado (status, timeline, técnico...)
+// Regra "última escrita vence" baseada em updatedAt para não sobrescrever com dados antigos.
+router.put('/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const existing = store.calls.find(c => c.id === id);
+
+    if (existing && toMillis(existing.updatedAt) > toMillis(req.body.updatedAt)) {
+      return res.json(formatCall(existing));
+    }
+
+    const merged = formatCall({
+      ...(existing || { createdAt: new Date().toISOString() }),
+      ...req.body,
+      id,
+      updatedAt: req.body.updatedAt || new Date().toISOString()
+    });
+    upsertInStore(merged);
+    await persistCall(merged);
+
+    res.status(existing ? 200 : 201).json(merged);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // PATCH /api/v1/calls/:id/status
-router.patch('/:id/status', (req, res) => {
+router.patch('/:id/status', async (req, res) => {
   const status = req.query.status || req.body.status;
   const idx = store.calls.findIndex(c => c.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Chamado não encontrado' });
 
-  store.calls[idx].status = status;
+  store.calls[idx] = { ...store.calls[idx], status, updatedAt: new Date().toISOString() };
+  await persistCall(store.calls[idx]);
   res.json(formatCall(store.calls[idx]));
 });
 
 // PATCH /api/v1/calls/:id/reassign
-router.patch('/:id/reassign', (req, res) => {
+router.patch('/:id/reassign', async (req, res) => {
   const technicianId = req.query.technicianId || req.body.technicianId;
   const technicianName = req.query.technicianName || req.body.technicianName;
 
   const idx = store.calls.findIndex(c => c.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Chamado não encontrado' });
 
-  store.calls[idx].technicianId = technicianId;
-  store.calls[idx].technicianName = technicianName;
+  store.calls[idx] = { ...store.calls[idx], technicianId, technicianName, updatedAt: new Date().toISOString() };
+  await persistCall(store.calls[idx]);
   res.json(formatCall(store.calls[idx]));
 });
 

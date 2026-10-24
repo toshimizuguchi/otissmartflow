@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { 
   User, 
   UserRole, 
@@ -447,6 +447,158 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     refreshFromBackend();
   };
 
+  // ===================================================================
+  // Sincronização de chamados com o backend (fonte da verdade compartilhada
+  // entre o app do técnico e o sistema web)
+  // ===================================================================
+  const PENDING_CALLS_KEY = STORAGE_PREFIX + 'pending_call_sync';
+  const SYNC_INTERVAL_MS = 20000;
+
+  // id do chamado -> momento (ISO) da última alteração local ainda não enviada
+  const pendingCallsRef = useRef<Record<string, string>>((() => {
+    try {
+      return JSON.parse(localStorage.getItem(PENDING_CALLS_KEY) || '{}') || {};
+    } catch {
+      return {};
+    }
+  })());
+  const callsRef = useRef<Call[]>(calls);
+  const prevCallsMapRef = useRef<Map<string, Call> | null>(null);
+  const serverCallObjectsRef = useRef<WeakSet<Call>>(new WeakSet());
+  const isFlushingRef = useRef(false);
+  const syncFailureNotifiedRef = useRef(false);
+  const localOnlyPushDoneRef = useRef(false);
+
+  const persistPendingCalls = () => {
+    localStorage.setItem(PENDING_CALLS_KEY, JSON.stringify(pendingCallsRef.current));
+  };
+
+  const markCallsDirty = (ids: string[]) => {
+    if (ids.length === 0) return;
+    const now = new Date().toISOString();
+    ids.forEach(id => { pendingCallsRef.current[id] = now; });
+    persistPendingCalls();
+  };
+
+  const toMillis = (v?: string) => {
+    const t = v ? new Date(v).getTime() : NaN;
+    return Number.isNaN(t) ? 0 : t;
+  };
+
+  // Envia ao backend todos os chamados com alterações pendentes
+  const flushPendingCalls = async (): Promise<boolean> => {
+    if (isFlushingRef.current || Object.keys(pendingCallsRef.current).length === 0) return true;
+    isFlushingRef.current = true;
+    let allOk = true;
+
+    try {
+      for (const [id, dirtyAt] of Object.entries(pendingCallsRef.current)) {
+        const call = callsRef.current.find(c => c.id === id);
+        if (!call) {
+          delete pendingCallsRef.current[id];
+          continue;
+        }
+        try {
+          await apiService.calls.upsert({ ...call, updatedAt: dirtyAt } as Call);
+          // Só remove da fila se não houve nova alteração durante o envio
+          if (pendingCallsRef.current[id] === dirtyAt) {
+            delete pendingCallsRef.current[id];
+          }
+        } catch (err) {
+          allOk = false;
+          console.debug('Sincronização de chamado pendente:', id, err);
+          break; // backend indisponível: tenta novamente no próximo ciclo
+        }
+      }
+    } finally {
+      persistPendingCalls();
+      isFlushingRef.current = false;
+    }
+
+    if (!allOk && !syncFailureNotifiedRef.current) {
+      syncFailureNotifiedRef.current = true;
+      addToast({
+        type: 'warning',
+        title: 'Sincronização pendente',
+        message: 'Servidor indisponível. As alterações foram salvas neste dispositivo e serão enviadas automaticamente.'
+      });
+    } else if (allOk && syncFailureNotifiedRef.current) {
+      syncFailureNotifiedRef.current = false;
+      addToast({
+        type: 'success',
+        title: 'Chamados sincronizados',
+        message: 'As alterações pendentes foram enviadas ao servidor.'
+      });
+    }
+
+    return allOk;
+  };
+
+  // Mescla os chamados do servidor com os locais, preservando alterações locais ainda não enviadas
+  const applyServerCalls = (apiCalls: Call[]) => {
+    if (!apiCalls || apiCalls.length === 0) return;
+
+    // Uma vez por sessão: envia ao servidor chamados que só existem neste dispositivo
+    if (!localOnlyPushDoneRef.current) {
+      localOnlyPushDoneRef.current = true;
+      const serverIds = new Set(apiCalls.map(c => c.id));
+      markCallsDirty(callsRef.current.filter(c => !serverIds.has(c.id)).map(c => c.id));
+    }
+
+    setCalls(prev => {
+      const prevById = new Map(prev.map(c => [c.id, c]));
+      const pending = pendingCallsRef.current;
+
+      const merged = apiCalls.map(serverCall => {
+        const local = prevById.get(serverCall.id);
+        if (local && pending[serverCall.id]) return local;
+        if (local && toMillis(local.updatedAt) > toMillis(serverCall.updatedAt)) return local;
+
+        const normalized: Call = {
+          ...serverCall,
+          timeline: Array.isArray(serverCall.timeline) && serverCall.timeline.length > 0 ? serverCall.timeline : [
+            {
+              step: 'Chamado Aberto',
+              timestamp: new Date(serverCall.createdAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+              description: serverCall.problemDescription || 'Abertura de chamado de serviço'
+            }
+          ]
+        };
+        if (local && JSON.stringify(local) === JSON.stringify(normalized)) return local;
+        serverCallObjectsRef.current.add(normalized);
+        return normalized;
+      });
+
+      const mergedIds = new Set(merged.map(c => c.id));
+      const next = [...merged, ...prev.filter(c => !mergedIds.has(c.id))];
+
+      const unchanged = next.length === prev.length && next.every((c, i) => c === prev[i]);
+      return unchanged ? prev : next;
+    });
+  };
+
+  const pullCallsFromBackend = async () => {
+    const apiCalls = await apiService.calls.getAll();
+    applyServerCalls(apiCalls);
+  };
+
+  // Detecta automaticamente qualquer alteração local em chamados e agenda o envio
+  useEffect(() => {
+    callsRef.current = calls;
+    const prevMap = prevCallsMapRef.current;
+    prevCallsMapRef.current = new Map(calls.map(c => [c.id, c]));
+    if (!prevMap) return; // primeira renderização: nada mudou ainda
+
+    const changedIds = calls
+      .filter(c => prevMap.get(c.id) !== c && !serverCallObjectsRef.current.has(c))
+      .map(c => c.id);
+    markCallsDirty(changedIds);
+
+    if (Object.keys(pendingCallsRef.current).length === 0) return;
+    const t = setTimeout(() => { flushPendingCalls(); }, 300);
+    return () => clearTimeout(t);
+  }, [calls]);
+
   const refreshFromBackend = async () => {
     setApiConnection(prev => ({ ...prev, isSyncing: true }));
     try {
@@ -491,20 +643,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           });
         }
         if (apiCalls && apiCalls.length > 0) {
-          setCalls(prev => {
-            const apiCallsWithDefaults = apiCalls.map(c => ({
-              ...c,
-              timeline: Array.isArray(c.timeline) && c.timeline.length > 0 ? c.timeline : [
-                {
-                  step: 'Chamado Aberto',
-                  timestamp: new Date(c.createdAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                  description: c.problemDescription || 'Abertura de chamado de serviço'
-                }
-              ]
-            }));
-            const apiIds = new Set(apiCallsWithDefaults.map(c => c.id));
-            return [...apiCallsWithDefaults, ...prev.filter(c => !apiIds.has(c.id))];
-          });
+          applyServerCalls(apiCalls);
         }
         if (apiContracts && apiContracts.length > 0) {
           setContracts(prev => {
@@ -557,6 +696,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     refreshFromBackend();
+  }, []);
+
+  // Ciclo contínuo de sincronização: a cada 20s, ao voltar para a aba/app e ao reconectar
+  useEffect(() => {
+    let running = false;
+    const syncCycle = async () => {
+      if (running || document.visibilityState !== 'visible') return;
+      running = true;
+      try {
+        await flushPendingCalls();
+        await pullCallsFromBackend();
+      } finally {
+        running = false;
+      }
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') syncCycle();
+    };
+
+    const interval = setInterval(syncCycle, SYNC_INTERVAL_MS);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    window.addEventListener('online', syncCycle);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+      window.removeEventListener('online', syncCycle);
+    };
   }, []);
 
   // Sync state to local storage
@@ -941,7 +1109,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setCalls((prev) => [newCall, ...prev]);
-    apiService.calls.create(newCall).catch(err => console.debug('Offline call save:', err));
+    // Envio ao backend é feito automaticamente pelo motor de sincronização de chamados
 
     // Update assigned technician status to A_CAMINHO and link currentCallId
     if (chosenTechId) {
@@ -1110,7 +1278,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       title: 'Status Atualizado',
       message: `Chamado atualizado com sucesso.`
     });
-    apiService.calls.updateStatus(callId, status).catch(err => console.debug('Offline call status save:', err));
+    // Envio ao backend é feito automaticamente pelo motor de sincronização de chamados
   };
 
   const reassignTechnician = (callId: string, newTechnicianId: string, overrideReason?: string) => {
@@ -1160,7 +1328,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     );
 
-    apiService.calls.reassign(callId, newTechnicianId, tech.name).catch(err => console.debug('Offline reassign save:', err));
+    // Envio ao backend é feito automaticamente pelo motor de sincronização de chamados
 
     addToast({
       type: 'success',

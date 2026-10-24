@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 8080;
 
 // Middlewares
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
 // Rota raiz amigável (nunca mais tela em branco ou 404!)
 app.get('/', (req, res) => {
