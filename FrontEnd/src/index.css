@@ -601,6 +601,33 @@ header .hdr-perfil-label              { font-size: 12px !important; }   /* PERFI
 header .hdr-user-name                 { font-size: 14px !important; }
 header .hdr-user-role                 { font-size: 12px !important; }
 
+@media (max-width: 639px) {
+  .app-header { gap: 4px !important; }
+  .app-header-brand {
+    flex: 1 1 auto;
+    min-width: 0 !important;
+    gap: 6px !important;
+  }
+  .app-header-brand .hdr-title { font-size: 18px !important; white-space: nowrap; }
+  .app-header-actions { flex: 0 0 auto; gap: 4px !important; }
+  .app-header-role-button {
+    max-width: 108px;
+    gap: 4px !important;
+    padding: 6px 7px !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+  }
+  .app-header-role-label { max-width: 66px !important; }
+  .app-header-actions > button {
+    flex: 0 0 auto;
+  }
+  .app-header-user-button {
+    min-width: 34px;
+    min-height: 34px;
+    justify-content: center;
+  }
+}
+
 /* ================================================================
    PÁGINAS FLUIDAS (.fluid-page) — letras, ícones e espaços se
    adaptam à largura da tela (notebook pequeno → monitor 28").

@@ -63,9 +63,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAIChat, onToggleMobileMenu
   const initials = currentUser.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 
   return (
-    <header className="h-[64px] px-2.5 sm:px-4 safe-top bg-slate-900/95 border-b border-slate-800/90 flex items-center justify-between sticky top-0 z-30 gap-2 backdrop-blur-md">
+    <header className="app-header h-[64px] px-2.5 sm:px-4 safe-top bg-slate-900/95 border-b border-slate-800/90 flex items-center justify-between sticky top-0 z-30 gap-2 backdrop-blur-md">
       {/* LEFT — logo + mobile trigger */}
-      <div className="flex items-center gap-2.5 shrink-0 min-w-[220px]">
+      <div className="app-header-brand flex items-center gap-2.5 shrink-0 min-w-[220px]">
         {onToggleMobileMenu && (
           <button
             className="md:hidden p-1.5 text-slate-400 hover:text-white active:scale-95 transition-all touch-manipulation cursor-pointer rounded-lg hover:bg-slate-800"
@@ -87,18 +87,19 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAIChat, onToggleMobileMenu
       </div>
 
       {/* RIGHT — ações */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="app-header-actions flex items-center gap-2 shrink-0">
 
         {/* Switcher de perfil */}
         <div ref={roleRef} className="relative">
           <button
             onClick={() => { setRoleDropdownOpen(v => !v); setUserMenuOpen(false); }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition-all cursor-pointer shadow-sm touch-manipulation"
+            className="app-header-role-button flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition-all cursor-pointer shadow-sm touch-manipulation"
             title="Trocar perfil"
           >
             <span className="hdr-perfil-label hidden sm:inline text-[10px] text-slate-500 uppercase">Perfil:</span>
-            <span className="truncate max-w-[84px] sm:max-w-none text-cyan-400 font-bold">
-              {ROLE_LABELS[currentUser.role] || currentUser.role}
+            <span className="app-header-role-label truncate max-w-[84px] sm:max-w-none text-cyan-400 font-bold">
+              <span className="sm:hidden">{currentUser.role === 'TECNICO' ? 'Técnico' : ROLE_LABELS[currentUser.role] || currentUser.role}</span>
+              <span className="hidden sm:inline">{ROLE_LABELS[currentUser.role] || currentUser.role}</span>
             </span>
             <ChevronDown size={12} className="text-slate-500 shrink-0" />
           </button>
@@ -181,7 +182,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAIChat, onToggleMobileMenu
         <div ref={userRef} className="relative">
           <button
             onClick={() => { setUserMenuOpen(v => !v); setRoleDropdownOpen(false); }}
-            className="flex items-center gap-2 p-1 sm:px-2 sm:py-1 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl text-slate-300 transition-all cursor-pointer shadow-sm"
+            className="app-header-user-button flex items-center gap-2 p-1 sm:px-2 sm:py-1 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl text-slate-300 transition-all cursor-pointer shadow-sm"
           >
             {currentUser.avatar ? (
               <img
