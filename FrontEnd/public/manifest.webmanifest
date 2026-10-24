@@ -1,7 +1,7 @@
 {
-  "name": "Terminal Técnico de Campo",
-  "short_name": "Terminal Técnico",
-  "description": "Aplicativo operacional para gestão de ordens de serviço, checklists de manutenção, mapas e navegação GPS em campo.",
+  "name": "Gestão Operacional",
+  "short_name": "Gestão",
+  "description": "Aplicativo web para gestão operacional e acesso rápido às ferramentas do sistema.",
   "lang": "pt-BR",
   "start_url": "/",
   "scope": "/",

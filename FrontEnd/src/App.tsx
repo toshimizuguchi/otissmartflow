@@ -6,6 +6,8 @@ import { Sidebar } from './components/layout/Sidebar';
 import { BottomNavigation } from './components/layout/BottomNavigation';
 import { AIChatDrawer } from './components/ai/AIChatDrawer';
 import { ToastContainer } from './components/common/UIComponents';
+import { PwaInstallModal } from './components/pwa/PwaInstallModal';
+import { usePwaInstall } from './hooks/usePwaInstall';
 
 // Dashboards
 import { PresidentDashboard } from './components/dashboards/PresidentDashboard';
@@ -38,6 +40,7 @@ import { PredictiveAnalyticsModule } from './components/modules/PredictiveAnalyt
 
 const MainLayout: React.FC = () => {
   const { currentUser, isLoggedIn, activeView, toasts, removeToast, theme } = useApp();
+  const pwa = usePwaInstall();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
@@ -56,7 +59,7 @@ const MainLayout: React.FC = () => {
       case 'SUPERVISOR':
         return <SupervisorDashboard />;
       case 'TECNICO':
-        return <TechnicianDashboard />;
+        return <TechnicianDashboard pwa={pwa} />;
       case 'ATENDENTE':
         return <AttendantDashboard />;
       case 'FINANCEIRO':
@@ -169,6 +172,7 @@ const MainLayout: React.FC = () => {
 
       {/* Notifications Toast */}
       <ToastContainer toasts={toasts} onDismiss={removeToast} />
+      <PwaInstallModal pwa={pwa} />
     </div>
   );
 };

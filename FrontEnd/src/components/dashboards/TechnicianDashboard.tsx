@@ -30,8 +30,11 @@ import {
   Smartphone,
   Download
 } from 'lucide-react';
-import { usePwaInstall } from '../../hooks/usePwaInstall';
-import { PwaInstallModal } from '../pwa/PwaInstallModal';
+import type { UsePwaInstallReturn } from '../../hooks/usePwaInstall';
+
+interface TechnicianDashboardProps {
+  pwa: UsePwaInstallReturn;
+}
 
 interface ChecklistItem {
   id: string;
@@ -146,9 +149,8 @@ const INITIAL_EQUIPMENT_TASKS: EquipmentMaintenanceTask[] = [
   }
 ];
 
-export const TechnicianDashboard: React.FC = () => {
+export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({ pwa }) => {
   const { calls, equipments, updateCallStatus, addToast, setActiveView, addTechActivityLog, currentUser } = useApp();
-  const pwa = usePwaInstall();
   
   // Tab Filter in the Left Panel: ALL | MAINTENANCE | CALLS
   const [filterType, setFilterType] = useState<'ALL' | 'MAINTENANCE' | 'CALLS'>('ALL');
@@ -396,10 +398,10 @@ export const TechnicianDashboard: React.FC = () => {
             <button
               onClick={pwa.openModal}
               className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-400 hover:to-sky-400 text-slate-950 text-xs font-bold flex items-center gap-2 shadow-md hover:shadow-cyan-500/20 active:scale-[0.98] transition-all"
-              title="Instalar aplicativo móvel (PWA) no celular ou tablet para GPS e modo offline"
+              title="Instalar aplicativo neste dispositivo"
             >
               <Download className="w-3.5 h-3.5 text-slate-950" />
-              <span>Instalar App Móvel</span>
+              <span>Instalar aplicativo</span>
               {pwa.platformInfo.isIos && (
                 <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-950/20 text-slate-950 font-bold">iOS</span>
               )}
@@ -462,6 +464,7 @@ export const TechnicianDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      </div>
 
       {/* Field Mobility & GPS PWA Banner (When not already installed) */}
       {!pwa.isInstalled && (
@@ -473,14 +476,14 @@ export const TechnicianDashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-white tracking-tight">
-                  Aplicativo Móvel para Atendimentos em Campo
+                  Aplicativo para Atendimentos em Campo
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-[10px] font-semibold text-sky-400 uppercase tracking-wider">
-                  {pwa.platformInfo.isIos ? 'iOS (iPhone / iPad)' : pwa.platformInfo.isAndroid ? 'Android' : 'PWA'}
+                  {pwa.platformInfo.isIos ? 'iOS (iPhone / iPad)' : pwa.platformInfo.isAndroid ? 'Android' : pwa.platformInfo.isDesktop ? 'Desktop' : 'Aplicativo Web'}
                 </span>
               </div>
               <p className="text-[11.5px] text-slate-400">
-                Instale no seu smartphone para navegação GPS rápida, rotas de viatura e modo offline no local.
+                Adicione à tela inicial para abrir rapidamente as ferramentas de atendimento em campo.
               </p>
             </div>
           </div>
@@ -1421,9 +1424,6 @@ export const TechnicianDashboard: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Universal PWA Installation Modal (iOS Exclusive, Android, Desktop) */}
-      <PwaInstallModal pwa={pwa} />
 
     </div>
   );

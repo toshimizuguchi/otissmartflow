@@ -1,7 +1,5 @@
-/* Service Worker - Terminal Técnico PWA */
-const CACHE_NAME = 'terminal-tecnico-v1';
-
-const STATIC_PRECACHE = [
+const CACHE_NAME = 'smartflow-shell-v2';
+const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
@@ -12,96 +10,84 @@ const STATIC_PRECACHE = [
   '/icons/icon.svg'
 ];
 
-// Install: Cache static core assets immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_PRECACHE).catch((err) => {
-        // Continue even if some optional asset fails during initial dev
-        console.warn('[SW] Pre-cache warning:', err);
-      });
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate: Clean up old caches and claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then((keys) => Promise.all(
+        keys.filter((key) =>
+          (key.startsWith('smartflow-shell-') && key !== CACHE_NAME) ||
+          key === 'terminal-tecnico-v1'
+        )
+          .map((key) => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// Fetch: Strategy depending on request type
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 1. Never cache non-GET requests (POST, PUT, DELETE, PATCH)
-  if (request.method !== 'GET') {
+  if (
+    request.method !== 'GET' ||
+    url.origin !== self.location.origin ||
+    request.headers.has('authorization') ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/reports/')
+  ) {
     return;
   }
 
-  // 2. API Endpoints: Network-only, with safe offline fallback JSON response
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/reports/')) {
+  if (request.mode === 'navigate') {
+    const cachePromise = caches.open(CACHE_NAME);
+    const networkResponse = fetch(request);
+    event.waitUntil(
+      networkResponse.then((response) => {
+        if (response.ok && response.type === 'basic') {
+          return cachePromise.then((cache) => cache.put(request, response.clone()));
+        }
+      }).catch(() => undefined)
+    );
     event.respondWith(
-      fetch(request).catch(() => {
-        return new Response(
-          JSON.stringify({
-            offline: true,
-            message: 'Dispositivo sem conexão de rede no momento. Ações serão sincronizadas ao reconectar.'
-          }),
-          {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+      networkResponse.catch(async () => {
+        const cache = await cachePromise;
+        const cachedPage = await cache.match(request);
+        return cachedPage || cache.match('/index.html');
       })
     );
     return;
   }
 
-  // 3. Navigation (HTML documents): Network-first with cache fallback for offline SPA shell
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          }
-          return response;
-        })
-        .catch(() => {
-          return caches.match('/index.html').then((cached) => {
-            return cached || caches.match('/');
-          });
-        })
-    );
-    return;
-  }
+  const isAppAsset = url.pathname.startsWith('/assets/') ||
+    url.pathname.startsWith('/icons/') ||
+    url.pathname === '/manifest.webmanifest';
 
-  // 4. Static assets (JS, CSS, fonts, images, icons): Stale-While-Revalidate
+  if (!isAppAsset || request.cache === 'no-store') return;
+
+  const networkResponse = fetch(request);
+  event.waitUntil(
+    networkResponse.then((response) => {
+      const cacheControl = response.headers.get('Cache-Control') || '';
+      if (
+        response.ok &&
+        response.type === 'basic' &&
+        !/\b(private|no-store)\b/i.test(cacheControl)
+      ) {
+        return caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+      }
+    }).catch(() => undefined)
+  );
+  const cachePromise = caches.open(CACHE_NAME);
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    })
+    cachePromise.then((cache) => cache.match(request))
+      .then((cachedResponse) => cachedResponse || networkResponse)
   );
 });

@@ -29,12 +29,16 @@ export interface PlatformInfo {
 export function checkIsStandalone(): boolean {
   if (typeof window === 'undefined') return false;
 
-  const isStandaloneMedia = window.matchMedia('(display-mode: standalone)').matches ||
-                            window.matchMedia('(display-mode: fullscreen)').matches ||
-                            window.matchMedia('(display-mode: minimal-ui)').matches;
+  const isStandaloneMedia = typeof window.matchMedia === 'function' && (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    window.matchMedia('(display-mode: minimal-ui)').matches
+  );
 
   // iOS Safari standalone flag
-  const isIosStandalone = Boolean((window.navigator as unknown as { standalone?: boolean }).standalone);
+  const isIosStandalone = Boolean(
+    (window.navigator as Navigator & { standalone?: boolean }).standalone
+  );
 
   // Android TWA / WebView referrer check
   const isAndroidApp = typeof document !== 'undefined' && document.referrer.startsWith('android-app://');
@@ -62,14 +66,15 @@ export function detectPlatform(): PlatformInfo {
 
   const ua = window.navigator.userAgent || '';
   const maxTouchPoints = window.navigator.maxTouchPoints || 0;
+  const userAgentDataPlatform = (
+    window.navigator as Navigator & { userAgentData?: { platform?: string } }
+  ).userAgentData?.platform || '';
   const isStandalone = checkIsStandalone();
 
-  // 1. Detect iOS (iPhone, iPod, iPad, iPadOS with desktop Safari UA)
-  const isIPhone = /iPhone|iPod/i.test(ua);
-  
-  // iPadOS 13+ often reports "Macintosh" with multi-touch points
+  // iPadOS may report a desktop Mac user agent while exposing multiple touch points.
+  const isIPhone = /iPhone/i.test(ua);
   const isIPadClassic = /iPad/i.test(ua);
-  const isIPadModern = /Macintosh/i.test(ua) && maxTouchPoints > 1 && !/Windows/i.test(ua);
+  const isIPadModern = /Macintosh/i.test(ua) && maxTouchPoints > 1;
   const isIPad = isIPadClassic || isIPadModern;
 
   const isIos = isIPhone || isIPad;
@@ -82,18 +87,18 @@ export function detectPlatform(): PlatformInfo {
   }
 
   // Detect if browser on iOS is Safari vs alternative browser (Chrome CriOS, Firefox FxiOS, Edge EdgiOS, etc.)
-  const isNonSafariOnIos = /(CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo)/i.test(ua);
+  const isNonSafariOnIos = /(CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo|GSA|Brave)/i.test(ua);
   const isSafariOnIos = isIos && !isNonSafariOnIos && /Safari/i.test(ua);
 
   // 2. Detect Android
-  const isAndroid = /Android/i.test(ua);
+  const isAndroid = /Android/i.test(ua) || /Android/i.test(userAgentDataPlatform);
 
   // 3. Detect Desktop
   // Exclude touch-tablets or phones that spoof desktop UAs
-  const isDesktopWindows = /Windows NT/i.test(ua);
-  const isDesktopMac = /Macintosh/i.test(ua) && maxTouchPoints <= 1;
-  const isDesktopLinux = /Linux/i.test(ua) && !isAndroid;
-  const isDesktopCrOS = /CrOS/i.test(ua);
+  const isDesktopWindows = /Windows NT/i.test(ua) || /Windows/i.test(userAgentDataPlatform);
+  const isDesktopMac = (/Macintosh/i.test(ua) || /Mac/i.test(userAgentDataPlatform)) && maxTouchPoints <= 1;
+  const isDesktopLinux = (/Linux/i.test(ua) || /Linux/i.test(userAgentDataPlatform)) && !isAndroid;
+  const isDesktopCrOS = /CrOS/i.test(ua) || /Chrome OS/i.test(userAgentDataPlatform);
 
   const isDesktop = (isDesktopWindows || isDesktopMac || isDesktopLinux || isDesktopCrOS) && !isIos && !isAndroid;
 

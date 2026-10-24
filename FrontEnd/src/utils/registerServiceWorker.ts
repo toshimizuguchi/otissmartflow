@@ -32,7 +32,7 @@ export function registerServiceWorker(): void {
               if (navigator.serviceWorker.controller) {
                 console.log('[PWA] Nova versão disponível. O cache será atualizado no próximo carregamento.');
               } else {
-                console.log('[PWA] Conteúdo em cache para uso offline.');
+                console.log('[PWA] Estrutura do aplicativo em cache; recursos que dependem de rede permanecem online.');
               }
             }
           };

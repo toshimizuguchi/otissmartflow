@@ -22,6 +22,16 @@ Plataforma completa para gestão de chamados, técnicos em campo, contratos, man
 
 ---
 
+## Instalação como aplicativo web (PWA)
+
+O projeto disponibiliza um manifesto em `public/manifest.webmanifest`, ícones em `public/icons/` e um Service Worker que mantém a estrutura estática do aplicativo disponível para carregamento sem rede. Chamadas de API e relatórios não são armazenados em cache e continuam dependendo da conexão.
+
+Em iPhone e iPad, abra o site no Safari e use **Compartilhar > Adicionar à Tela de Início**. Em Android e navegadores de desktop compatíveis, use o botão de instalação ou a opção correspondente no menu do navegador.
+
+O Service Worker e a instalação PWA exigem HTTPS em produção; `localhost` é aceito para desenvolvimento. A hospedagem Vercel fornece HTTPS para domínios publicados, mas a disponibilidade efetiva do deploy e do domínio precisa ser conferida após a publicação.
+
+---
+
 ## 🌐 Deploy no Vercel
 
 O projeto já está 100% configurado com [`vercel.json`](vercel.json), rotas SPA e otimização de chunks do Vite.
@@ -60,4 +70,3 @@ O projeto já está 100% configurado com [`vercel.json`](vercel.json), rotas SPA
    ```bash
    vercel --prod
    ```
-

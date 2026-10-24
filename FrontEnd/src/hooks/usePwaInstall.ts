@@ -19,7 +19,7 @@ export interface UsePwaInstallReturn {
   isModalOpen: boolean;
   openModal: () => void;
   closeModal: () => void;
-  triggerInstall: () => Promise<'accepted' | 'dismissed' | 'manual-instructions'>;
+  triggerInstall: () => Promise<'accepted' | 'dismissed' | 'manual-instructions' | 'error'>;
 }
 
 export function usePwaInstall(): UsePwaInstallReturn {
@@ -48,7 +48,9 @@ export function usePwaInstall(): UsePwaInstallReturn {
       console.log('[PWA] Aplicativo instalado com sucesso.');
     };
 
-    const mediaQueryList = window.matchMedia('(display-mode: standalone)');
+    const mediaQueryList = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(display-mode: standalone)')
+      : null;
     const handleDisplayModeChange = (e: MediaQueryListEvent) => {
       if (e.matches) {
         setIsInstalled(true);
@@ -58,24 +60,24 @@ export function usePwaInstall(): UsePwaInstallReturn {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
-    mediaQueryList.addEventListener('change', handleDisplayModeChange);
+    mediaQueryList?.addEventListener('change', handleDisplayModeChange);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      mediaQueryList.removeEventListener('change', handleDisplayModeChange);
+      mediaQueryList?.removeEventListener('change', handleDisplayModeChange);
     };
   }, []);
 
   const openModal = useCallback(() => {
-    setIsModalOpen(true);
-  }, []);
+    if (!isInstalled) setIsModalOpen(true);
+  }, [isInstalled]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
   }, []);
 
-  const triggerInstall = useCallback(async (): Promise<'accepted' | 'dismissed' | 'manual-instructions'> => {
+  const triggerInstall = useCallback(async (): Promise<'accepted' | 'dismissed' | 'manual-instructions' | 'error'> => {
     // 1. If on iOS, never call prompt() because the API is not available
     if (platformInfo.isIos) {
       return 'manual-instructions';
@@ -84,19 +86,18 @@ export function usePwaInstall(): UsePwaInstallReturn {
     // 2. If beforeinstallprompt is available (Android, Chrome/Edge Desktop)
     if (deferredPrompt) {
       try {
-        await deferredPrompt.prompt();
-        const choiceResult = await deferredPrompt.userChoice;
+        const promptEvent = deferredPrompt;
+        await promptEvent.prompt();
+        const choiceResult = await promptEvent.userChoice;
+        setDeferredPrompt(null);
         if (choiceResult.outcome === 'accepted') {
-          setIsInstalled(true);
-          setDeferredPrompt(null);
-          setIsModalOpen(false);
           return 'accepted';
-        } else {
-          return 'dismissed';
         }
+        return 'dismissed';
       } catch (err) {
         console.warn('[PWA] Erro ao executar prompt de instalação:', err);
-        return 'manual-instructions';
+        setDeferredPrompt(null);
+        return 'error';
       }
     }
 
